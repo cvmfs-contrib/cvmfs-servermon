@@ -1,0 +1,290 @@
+#!/bin/bash
+# temporary generator of repository info in /srv/cvmfs/info/repositories
+# this functionality is planned to move into cvmfs-server-2.2.0 (CVM-860)
+
+###############################################
+# Start of functions borrowed from cvmfs_server
+###############################################
+
+die() {
+  echo -e $1 >&2
+  exit 1
+}
+
+# Find out how to deal with Apache
+# (binary name, configuration directory, CLI, WSGI module name, ...)
+if which httpd2 > /dev/null 2>&1; then # SLES/OpenSuSE
+  APACHE_CONF="apache2"
+  APACHE_BIN="$(which httpd2)"
+  APACHE_CTL="$APACHE_BIN"
+  APACHE_WSGI_MODPKG="apache2-mod_wsgi"
+elif which apache2 > /dev/null 2>&1; then
+  APACHE_CONF="apache2"
+  APACHE_BIN="$(which apache2)"
+  if which apachectl > /dev/null 2>&1; then # Debian
+    APACHE_CTL="$(which apachectl)"
+    APACHE_WSGI_MODPKG="libapache2-mod-wsgi"
+  elif which apache2ctl > /dev/null 2>&1; then # Gentoo
+    APACHE_CTL="$(which apache2ctl)"
+    APACHE_WSGI_MODPKG="www-apache/mod_wsgi"
+  fi
+else # RedHat based
+  APACHE_CONF="httpd"
+  APACHE_BIN="/usr/sbin/httpd"
+  APACHE_CTL="$APACHE_BIN"
+  APACHE_WSGI_MODPKG="mod_wsgi"
+fi
+
+# Find the service binary (or detect systemd)
+minpidof() {
+  pidof $1 | tr " " "\n" | sort --numeric-sort | head -n1
+}
+SERVICE_BIN="false"
+if ! pidof systemd > /dev/null 2>&1 || [ $(minpidof systemd) -ne 1 ]; then
+  if [ -x /sbin/service ]; then
+    SERVICE_BIN="/sbin/service"
+  elif [ -x /usr/sbin/service ]; then
+    SERVICE_BIN="/usr/sbin/service" # Ubuntu
+  elif [ -x /sbin/rc-service ]; then
+    SERVICE_BIN="/sbin/rc-service" # OpenRC
+  else
+    die "Neither systemd nor service binary detected"
+  fi
+fi
+
+is_systemd() {
+  [ x"$SERVICE_BIN" = x"false" ]
+}
+
+# figure out apache config file mode
+#
+# @return   apache config mode (stdout) (see globals below)
+APACHE_CONF_MODE_CONFD=1     # *.conf goes to ${APACHE_CONF}/conf.d
+APACHE_CONF_MODE_CONFAVAIL=2 # *.conf goes to ${APACHE_CONF}/conf-available
+get_apache_conf_mode() {
+  [ -d /etc/${APACHE_CONF}/conf-available ] && echo $APACHE_CONF_MODE_CONFAVAIL \
+                                            || echo $APACHE_CONF_MODE_CONFD
+}
+
+request_apache_service() {
+  local request_verb="$1"
+  if is_systemd; then
+    /bin/systemctl $request_verb ${APACHE_CONF}
+  else
+    $SERVICE_BIN $APACHE_CONF $request_verb
+  fi
+}
+
+reload_apache() {
+  echo -n "Reloading Apache... "
+  request_apache_service reload > /dev/null || die "fail"
+  echo "done"
+}
+
+
+version_minor() { echo $1 | cut --delimiter=. --fields=2; }
+
+# retrieves the apache version string
+get_apache_version() {
+  ${APACHE_BIN} -v | head -n1 | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+'
+}
+
+# figure out apache config file mode
+#
+# @return   apache config mode (stdout) (see globals below)
+APACHE_CONF_MODE_CONFD=1     # *.conf goes to ${APACHE_CONF}/conf.d
+APACHE_CONF_MODE_CONFAVAIL=2 # *.conf goes to ${APACHE_CONF}/conf-available
+get_apache_conf_mode() {
+  [ -d /etc/${APACHE_CONF}/conf-available ] && echo $APACHE_CONF_MODE_CONFAVAIL \
+                                            || echo $APACHE_CONF_MODE_CONFD
+}
+
+
+# find location of apache configuration files
+#
+# @return   the location of apache configuration files (stdout)
+get_apache_conf_path() {
+  local res_path="/etc/${APACHE_CONF}"
+  if [ x"$(get_apache_conf_mode)" = x"$APACHE_CONF_MODE_CONFAVAIL" ]; then
+    echo "${res_path}/conf-available"
+  elif [ -d "${res_path}/modules.d" ]; then
+    echo "${res_path}/modules.d"
+  else
+    echo "${res_path}/conf.d"
+  fi
+}
+
+
+# returns the apache configuration string for 'allow from all'
+# Note: this is necessary, since apache 2.4.x formulates that different
+#
+# @return   a configuration snippet to allow s'th from all hosts (stdout)
+get_compatible_apache_allow_from_all_config() {
+  local minor_apache_version=$(version_minor "$(get_apache_version)")
+  if [ $minor_apache_version -ge 4 ]; then
+    echo "Require all granted"
+  else
+    local nl='
+'
+    echo "Order allow,deny${nl}    Allow from all"
+  fi
+}
+
+
+# writes apache configuration file
+# This figures out where to put the apache configuration file depending
+# on the running apache version
+# Note: Configuration file content is expected to come through stdin
+#
+# @param   file_name  the name of the apache config file (no path!)
+# @return             0 on succes
+create_apache_config_file() {
+  local file_name=$1
+  local conf_path
+  conf_path="$(get_apache_conf_path)"
+
+  # create (or append) the conf file
+  cat - >> ${conf_path}/${file_name} || return 1
+
+  # the new apache requires the enable the config afterwards
+  if [ x"$(get_apache_conf_mode)" = x"$APACHE_CONF_MODE_CONFAVAIL" ]; then
+    a2enconf $file_name > /dev/null || return 2
+  fi
+
+  return 0
+}
+
+
+# Helper functions for file locking including detection of stale locks
+# Note: The implementation idea was found here:
+#       http://rute.2038bug.com/node23.html.gz
+__is_valid_lock() {
+  local path="$1"
+  local ignore_stale="$2"
+
+  local lock_file="${path}.lock"
+  [ -f $lock_file ]      || return 1 # lock doesn't exist
+  [ -z "$ignore_stale" ] || return 0 # lock is there (skip the stale test)
+
+  local stale_pid=$(cat $lock_file 2>/dev/null)
+  [ $stale_pid -gt 0 ]     && \
+  kill -0 $stale_pid 2>/dev/null
+}
+
+acquire_lock() { # hardlink creation is guaranteed to be atomic!
+  local path="$1"
+  local ignore_stale="$2"
+
+  local pid="$$"
+  local temp_file="${path}.${pid}"
+  local lock_file="${path}.lock"
+  echo $pid > $temp_file || return 1 # probably no access to $path
+
+  if ln $temp_file $lock_file 2>/dev/null; then
+    rm -f $temp_file 2>/dev/null
+    return 0 # lock acquired
+  fi
+
+  if __is_valid_lock "$path" "$ignore_stale"; then
+    rm -f $temp_file 2>/dev/null
+    return 1 # lock couldn't be acquired and appears valid
+  fi
+
+  rm -f $lock_file 2>/dev/null # lock was stale and can be removed
+  if ln $temp_file $lock_file; then
+    rm -f $temp_file 2>/dev/null
+    return 0 # lock acquired
+  fi
+
+  rm -f $temp_file 2>/dev/null
+  return 1 # lock couldn't be acquired after removing stale lock (lost the race)
+}
+
+release_lock() {
+  local path="$1"
+  local lock_file="${path}.lock"
+  rm -f $lock_file 2>/dev/null
+}
+
+#############################################
+# End of functions borrowed from cvmfs_server
+#############################################
+
+# this function should have been in cvmfs_server
+create_apache_config_core()
+{
+  local name=$1
+  local store_dir=$2
+
+  create_apache_config_file "cvmfs.${name}.conf" << EOF
+KeepAlive On
+# Translation URL to real pathname
+Alias /cvmfs/$name ${store_dir}
+<Directory "${store_dir}">
+    Options -MultiViews
+    AllowOverride Limit
+    $(get_compatible_apache_allow_from_all_config)
+
+    EnableMMAP Off
+    EnableSendFile Off
+
+    AddType application/x-cvmfs .cvmfspublished .cvmfswhitelist
+
+    Header unset Last-Modified
+    FileETag None
+
+    ExpiresActive On
+    ExpiresDefault "access plus 3 days"
+    ExpiresByType text/html "access plus 5 minutes"
+    ExpiresByType application/x-cvmfs "access plus 2 minutes"
+</Directory>
+EOF
+}
+
+create_apache_info_config()
+{
+  create_apache_config_file "cvmfs.info.conf" << EOF
+# Created by make_repositories_info.  Don't touch.
+EOF
+  create_apache_config_core info /srv/cvmfs/info
+  reload_apache >/dev/null
+}
+
+update_repositories_info()
+{
+  local repos_file="$1"
+  local repo_conf_files="`find /etc/cvmfs/repositories.d -name replica.conf`"
+
+  [ -n "$repo_conf_files" ] || die "No cvmfs replicas found"
+
+  mkdir -p $(dirname $repos_file)
+  acquire_lock $repos_file ignorestale || die "Failed to create lock on $repos_file"
+  (
+    echo '{'
+    echo '    "replicas" : ['
+    repo=""
+    for repo_conf_file in $repo_conf_files; do
+      if [ -n "$repo" ]; then
+	echo '        { "name" : "'$repo'" },'
+      fi
+      repo="`echo $repo_conf_file|cut -d/ -f5`"
+    done
+    echo '        { "name" : "'$repo'" }'
+    echo '    ]'
+    echo '}'
+  ) > $repos_file.new
+  mv -f $repos_file.new $repos_file
+  release_lock $repos_file
+}
+
+
+repos_info="/srv/cvmfs/info/repositories"
+if [ ! -f $repos_info ] || \
+    [ -n "`find /etc/cvmfs/repositories.d -name replica.conf -newer $repos_info 2>/dev/null`" ]; then
+  conf_file=$(get_apache_conf_path)/cvmfs.info.conf
+  echo "Updating $repos_info"
+  if update_repositories_info $repos_info && [ ! -f $conf_file ]; then
+    echo "Creating $conf_file"
+    create_apache_info_config
+  fi
+fi
