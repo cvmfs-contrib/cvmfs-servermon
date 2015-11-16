@@ -7,30 +7,30 @@ def runtest(repo, serverurl):
     testname = 'updated'
     url = serverurl + '/cvmfs/' + repo + '/.cvmfs_last_snapshot'
     try:
-	request = urllib2.Request(url, headers={"Cache-control" : "max-age=30"})
-	snapshot_string = urllib2.urlopen(request).read()
-	snapshot_date = dateutil.parser.parse(snapshot_string)
+        request = urllib2.Request(url, headers={"Cache-control" : "max-age=30"})
+        snapshot_string = urllib2.urlopen(request).read()
+        snapshot_date = dateutil.parser.parse(snapshot_string)
     except urllib2.HTTPError, e:
-	if e.code == 404:
-	    return [ testname, repo, 'OK', 'initial snapshot in progress' ]
-	return [ testname, repo, 'CRITICAL', url + ' error: ' + str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1]) ]
+        if e.code == 404:
+            return [ testname, repo, 'OK', 'initial snapshot in progress' ]
+        return [ testname, repo, 'CRITICAL', url + ' error: ' + str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1]) ]
     except:
-	return [ testname, repo, 'CRITICAL', url + ' error: ' + str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1]) ]
+        return [ testname, repo, 'CRITICAL', url + ' error: ' + str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1]) ]
 
     now = datetime.datetime.now(dateutil.tz.tzutc())
     delta = now-snapshot_date
     diff_secs = delta.days * 24 * 3600 + delta.seconds
 
     if diff_secs < warning_secs:
-	status = 'OK'
+        status = 'OK'
     elif diff_secs < critical_secs:
-	status = 'WARNING'
+        status = 'WARNING'
     else:
-	status = 'CRITICAL'
+        status = 'CRITICAL'
 
     if status == 'OK':
-	msg = ''
+        msg = ''
     else:
-	msg = 'last successful snapshot ' + str(diff_secs) + ' seconds ago'
+        msg = 'last successful snapshot ' + str(diff_secs) + ' seconds ago'
 
     return [ testname, repo, status, msg ]

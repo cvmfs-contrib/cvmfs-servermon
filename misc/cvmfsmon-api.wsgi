@@ -22,8 +22,8 @@ def application(environ, start_response):
     version, montests, separator, paramstring = match_result.groups()
 
     try:
-	# python 2.6 and later is suppsed to use urlparse instead of cgi
-	parameters = cgi.parse_qs(paramstring)
+        # python 2.6 and later is suppsed to use urlparse instead of cgi
+        parameters = cgi.parse_qs(paramstring)
     except:
         return cvmfsmon_api.bad_request(start_response, 'failure parsing parameters: ' + paramstring)
 

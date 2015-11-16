@@ -265,7 +265,7 @@ update_repositories_info()
     repo=""
     for repo_conf_file in $repo_conf_files; do
       if [ -n "$repo" ]; then
-	echo '        { "name" : "'$repo'" },'
+        echo '        { "name" : "'$repo'" },'
       fi
       repo="`echo $repo_conf_file|cut -d/ -f5`"
     done
