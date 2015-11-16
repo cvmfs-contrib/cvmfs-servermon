@@ -71,7 +71,8 @@ def dispatch(version, montests, parameters, start_response, environ):
     url = 'http://' + server + '/cvmfs/info/repositories'
     repos = []
     try:
-	json_data = urllib2.urlopen(url).read()
+	request = urllib2.Request(url, headers={"Cache-control" : "max-age=60"})
+	json_data = urllib2.urlopen(request).read()
 	repos_info = anyjson.deserialize(json_data)
 	if 'replicas' in repos_info:
 	    for repo_info in repos_info['replicas']:

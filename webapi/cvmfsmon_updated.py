@@ -7,7 +7,8 @@ def runtest(repo, serverurl):
     testname = 'updated'
     url = serverurl + '/cvmfs/' + repo + '/.cvmfs_last_snapshot'
     try:
-	snapshot_string = urllib2.urlopen(url).read()
+	request = urllib2.Request(url, headers={"Cache-control" : "max-age=30"})
+	snapshot_string = urllib2.urlopen(request).read()
 	snapshot_date = dateutil.parser.parse(snapshot_string)
     except urllib2.HTTPError, e:
 	if e.code == 404:
