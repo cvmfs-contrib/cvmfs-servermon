@@ -1,4 +1,20 @@
-import os, sys, socket, urllib2, anyjson
+# Implement the 
+# A URL is of the form:
+#  /cvmfsmon/api/v1.0/montests&param1=value1&param2=value2
+# The URL is parsed by the calling function, and the params come in a 
+#   dictionary of keys, each with a list of values
+# Currently supported "montests" are
+#  ok - always returns OK
+#  all - runs all applicable tests but 'ok'
+#  updated - verifies that updates are happening on a stratum 1
+# Currently supported parameters are
+#  format - value one of the following (default: list)
+#    status - reports only one line: OK, WARNING, or CRITICAL
+#    list - reports a line for each available status, followed by colon, 
+#      followed by a comma-separated list of repositories at that status.
+#    details - detailed json output with all the tests and messages
+
+import os, sys, socket, urllib2, anyjson, pprint, StringIO, string
 import cvmfsmon_updated
 
 negative_expire_secs = 60*2;        # 2 minutes
@@ -17,7 +33,6 @@ def bad_request(start_response, reason):
     return error_request(start_response, '400 Bad Request', response_body)
 
 def good_request(start_response, response_body):
-    response_body = response_body + '\n'
     response_code = '200 OK'
     start_response(response_code,
     		  [('Content-Type', 'text/plain'),
@@ -75,7 +90,67 @@ def dispatch(version, montests, parameters, start_response, environ):
 	    return bad_request(start_response, 'unrecognized montests ' + montests)
 	allresults.extend(results)
 
-    print allresults
+    format = 'list'
+    if 'format' in parameters:
+	formats = parameters['format']
+	l = len(formats)
+	if l > 0:
+	    format = formats[l - 1]
 
-    return good_request(start_response, 'OK')
+    body = ""
+    if format == 'ok':
+	worststatus = 'OK'
+	for result in allresults:
+	    status = result[2]
+	    if status == 'CRITICAL':
+		worststatus = 'CRITICAL'
+	    elif (status == 'WARNING') and (worststatus != 'CRITICAL'):
+		worststatus = 'WARNING'
+	body = worststatus + '\n'
+    elif format == 'details':
+	details = {}
+	for result in allresults:
+	    test = result[0]
+	    status = result[2]
+	    repomsg = {'repo' : result[1], 'msg': result[3]}
+	    if status in details:
+		if test in details[status]:
+		    details[status][test].append(repomsg)
+		else:
+		    details[status][test] = [repomsg]
+	    else:
+		details[status] = {}
+		details[status][test] = [repomsg]
+
+	output = StringIO.StringIO()
+	pprint.pprint(details, output)
+	body = output.getvalue()
+	output.close()
+	body = string.replace(body,"'", '"')
+    else:  # list format
+	repostatuses = {}
+	for result in allresults:
+	    repo = result[1]
+	    status = result[2]
+	    worststatus = 'OK'
+	    if repo in repostatuses:
+		worststatus = repostatuses[repo]
+	    if status == 'CRITICAL':
+		worststatus = status
+	    elif (status == 'WARNING') and (worststatus != 'CRITICAL'):
+		worststatus = status
+	    repostatuses[repo] = worststatus
+
+	statusrepos = {}
+	for repo in repostatuses:
+	    status = repostatuses[repo]
+	    if not status in statusrepos:
+		statusrepos[status] = []
+	    statusrepos[status].append(repo)
+	for status in ['CRITICAL', 'WARNING', 'OK']:
+	    if status in statusrepos:
+		statusrepos[status].sort()
+		body += status + ':' + ",".join(statusrepos[status]) + '\n'
+
+    return good_request(start_response, body)
 
