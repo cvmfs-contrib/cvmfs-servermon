@@ -4,6 +4,12 @@ import os, sys, re
 import cvmfsmon_api
 import cgi
 
+# A URL is of the form:
+# /cvmfsmon/api/v1.0/montests&param1=value1&param2=value2
+# The "/cvmfsmon/api" is stripped off by apache.
+# The value of "montests" and the params is determined in the 
+#  cvmfsmon_api.dispatch function.
+
 pattern = re.compile('^/(v[^/]*)/([^&]*)(&|)(.*)$')
 
 def application(environ, start_response):
