@@ -21,18 +21,19 @@ cvmfs-server installations.
 
 %install
 mkdir -p $RPM_BUILD_ROOT/etc/cvmfsmon
-install -m 644 etc/* $RPM_BUILD_ROOT/etc/cvmfsmon
+install -p -m 644 etc/* $RPM_BUILD_ROOT/etc/cvmfsmon
 mkdir -p $RPM_BUILD_ROOT%{_sbindir}
-install -m 555 compat/* $RPM_BUILD_ROOT%{_sbindir}
+install -p -m 555 compat/* $RPM_BUILD_ROOT%{_sbindir}
 mkdir -p $RPM_BUILD_ROOT/etc/httpd/conf.d
-install -m 444 misc/cvmfsmon.conf $RPM_BUILD_ROOT/etc/httpd/conf.d
+install -p -m 444 misc/cvmfsmon.conf $RPM_BUILD_ROOT/etc/httpd/conf.d
 mkdir -p $RPM_BUILD_ROOT/var/www/wsgi-scripts
-install -m 555 misc/cvmfsmon-api.wsgi $RPM_BUILD_ROOT/var/www/wsgi-scripts
+install -p -m 555 misc/cvmfsmon-api.wsgi $RPM_BUILD_ROOT/var/www/wsgi-scripts
 mkdir -p $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
-install -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
+install -p -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 
 %post
-/sbin/service httpd status >/dev/null && /sbin/service httpd reload && true
+/sbin/service httpd status >/dev/null && /sbin/service httpd reload
+:
 
 %files
 %dir /etc/cvmfsmon
