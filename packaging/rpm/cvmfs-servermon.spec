@@ -32,7 +32,7 @@ mkdir -p $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 install -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 
 %post
-/sbin/service httpd status >/dev/null && /sbin/service httpd reload
+/sbin/service httpd status >/dev/null && /sbin/service httpd reload && true
 
 %files
 %dir /etc/cvmfsmon
