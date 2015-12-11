@@ -1,6 +1,0 @@
-{
-    "replicas" : [
-        { "name" : "cms.cern.ch" },
-        { "name" : "atlas.cern.ch" }
-    ]
-}
