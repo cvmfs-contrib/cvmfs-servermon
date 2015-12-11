@@ -11,6 +11,7 @@ Source0: https://ecsft.cern.ch/dist/cvmfs/%{name}-%{version}.tar.gz
 Requires: httpd
 Requires: mod_wsgi
 Requires: python-anyjson
+Requires: python-dateutil
 
 %description
 Provides an api for monitoring a cvmfs-server installation or multiple
