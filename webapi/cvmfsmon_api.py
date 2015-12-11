@@ -76,7 +76,8 @@ def dispatch(version, montests, parameters, start_response, environ):
         repos_info = anyjson.deserialize(json_data)
         if 'replicas' in repos_info:
             for repo_info in repos_info['replicas']:
-                repos.append(repo_info['name'])
+                # the url always has the visible name
+                repos.append(repo_info['url'].replace('/cvmfs/',''))
     except:
         return error_request(start_response, '502 Bad Gateway', url + ' error: ' + str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1]))
 
