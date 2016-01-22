@@ -68,7 +68,7 @@ def dispatch(version, montests, parameters, start_response, environ):
 
     socket.setdefaulttimeout(timeout_secs)
 
-    url = 'http://' + server + '/cvmfs/info/repositories'
+    url = 'http://' + server + '/cvmfs/info/v1/repositories.json'
     repos = []
     try:
         request = urllib2.Request(url, headers={"Cache-control" : "max-age=60"})
