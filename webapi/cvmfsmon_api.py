@@ -13,6 +13,8 @@
 #    list - reports a line for each available status, followed by colon, 
 #      followed by a comma-separated list of repositories at that status.
 #    details - detailed json output with all the tests and messages
+#  server - value is either 'local' (the default, indicating localhost) or
+#    an alias of a server as defined in /etc/cvmfsmon/api.conf
 
 import os, sys, socket, urllib2, anyjson, pprint, StringIO, string
 import cvmfsmon_updated
