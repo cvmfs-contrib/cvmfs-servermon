@@ -100,7 +100,7 @@ def dispatch(version, montests, parameters, start_response, environ):
             format = formats[l - 1]
 
     body = ""
-    if format == 'ok':
+    if format == 'status':
         worststatus = 'OK'
         for result in allresults:
             status = result[2]
