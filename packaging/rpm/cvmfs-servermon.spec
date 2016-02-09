@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.0
+Version: 1.1
 Release: 1%{?dist}
 BuildArch: noarch
 Group: Applications/System
@@ -45,5 +45,9 @@ install -p -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 /usr/share/cvmfs-servermon
 
 %changelog
+* Fri Feb 05 2015 Dave Dykstra <dwd@fnal.gov> - 1.1-1
+- Change test format name from 'ok' to 'status' as was planned and
+  documented in the comments.
+
 * Mon Oct 12 2015 Dave Dykstra <dwd@fnal.gov> - 1.0-1
 - Initial release
