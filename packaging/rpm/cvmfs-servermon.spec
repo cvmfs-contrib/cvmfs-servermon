@@ -45,7 +45,7 @@ install -p -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 /usr/share/cvmfs-servermon
 
 %changelog
-* Fri Feb 05 2015 Dave Dykstra <dwd@fnal.gov> - 1.1-1
+* Fri Feb 05 2016 Dave Dykstra <dwd@fnal.gov> - 1.1-1
 - Change test format name from 'ok' to 'status' as was planned and
   documented in the comments.
 
