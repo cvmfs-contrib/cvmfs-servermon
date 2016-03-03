@@ -9,6 +9,8 @@ def runtest(repo, serverurl):
     try:
         request = urllib2.Request(url, headers={"Cache-control" : "max-age=30"})
         snapshot_string = urllib2.urlopen(request).read()
+        if snapshot_string == '':
+          return [ testname, repo, 'CRITICAL', url + ' error: empty snapshot date' ]
         snapshot_date = dateutil.parser.parse(snapshot_string)
     except urllib2.HTTPError, e:
         if e.code == 404:
