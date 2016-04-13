@@ -1,4 +1,4 @@
-# Implement the 
+# Implement the cvmfsmon API
 # A URL is of the form:
 #  /cvmfsmon/api/v1.0/montests&param1=value1&param2=value2
 # The URL is parsed by the calling function, and the params come in a 
