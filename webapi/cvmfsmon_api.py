@@ -79,7 +79,8 @@ def dispatch(version, montests, parameters, start_response, environ):
         if 'replicas' in repos_info:
             for repo_info in repos_info['replicas']:
                 # the url always has the visible name
-                repos.append(repo_info['url'].replace('/cvmfs/',''))
+                # use "str" to convert from unicode to string
+                repos.append(str(repo_info['url'].replace('/cvmfs/','')))
     except:
         return error_request(start_response, '502 Bad Gateway', url + ' error: ' + str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1]))
 
