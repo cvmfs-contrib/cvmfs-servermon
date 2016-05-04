@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.2
+Version: 1.3
 Release: 1%{?dist}
 BuildArch: noarch
 Group: Applications/System
@@ -45,6 +45,10 @@ install -p -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 /usr/share/cvmfs-servermon
 
 %changelog
+* Wed May 04 2016 Dave Dykstra <dwd@fnal.gov> - 1.3-1
+- Convert unicode repository name to string. It was causing the
+  "format=list" output to crash on el6.
+
 * Thu Mar 03 2016 Dave Dykstra <dwd@fnal.gov> - 1.2-1
 - Prevent empty .cvmfs_last_snapshot files (which can happen when a disk
   fills up) from causing a crash and stack trace.
