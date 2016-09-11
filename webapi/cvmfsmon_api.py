@@ -86,6 +86,8 @@ def dispatch(version, montests, parameters, start_response, environ):
 
     allresults = []
     for repo in repos:
+        if repo in excludes:
+            continue
         results = []
         if montests == 'ok':
             results.append([ 'ok', repo, 'OK', '' ])
