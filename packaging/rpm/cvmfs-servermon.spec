@@ -1,12 +1,12 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.3
+Version: 1.4
 Release: 1%{?dist}
 BuildArch: noarch
 Group: Applications/System
 License: BSD
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Source0: https://ecsft.cern.ch/dist/cvmfs/%{name}-%{version}.tar.gz
+Source0: https://github.com/cvmfs/%{name}/archive/%{name}-%{version}.tar.gz
 
 Requires: httpd
 Requires: mod_wsgi
@@ -45,6 +45,9 @@ install -p -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 /usr/share/cvmfs-servermon
 
 %changelog
+* Sun Sep 11 2016 Dave Dykstra <dwd@fnal.gov> - 1.4-1
+- Fix the excluderepo keyword in /etc/cvmfsmon/api.conf
+
 * Wed May 04 2016 Dave Dykstra <dwd@fnal.gov> - 1.3-1
 - Convert unicode repository name to string. It was causing the
   "format=list" output to crash on el6.
