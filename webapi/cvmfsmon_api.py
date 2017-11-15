@@ -7,6 +7,8 @@
 #  ok - always returns OK
 #  all - runs all applicable tests but 'ok'
 #  updated - verifies that updates are happening on a stratum 1
+#  gc - verifies that repositories that have done garbage collection
+#       have done it successfully recently
 # Currently supported parameters are
 #  format - value one of the following (default: list)
 #    status - reports only one line: OK, WARNING, or CRITICAL
@@ -17,11 +19,23 @@
 #    an alias of a server as defined in /etc/cvmfsmon/api.conf
 
 import os, sys, socket, urllib2, anyjson, pprint, StringIO, string
-import cvmfsmon_updated
+import cvmfsmon_updated, cvmfsmon_gc
 
-negative_expire_secs = 60*2;        # 2 minutes
-positive_expire_secs = 60*2;        # 2 minutes
+negative_expire_secs = 60*2         # 2 minutes
+positive_expire_secs = 60*2         # 2 minutes
 timeout_secs = 5                    # tries twice for 5 seconds
+request_max_secs = 30               # maximum cache seconds when reading
+
+aliases = {
+    'local': '127.0.0.1'
+}
+excludes = []
+limits = {
+    'updated-warning': 8,
+    'updated-critical': 24,
+    'gc-warning': 10,
+    'gc-critical': 20
+}
 
 def error_request(start_response, response_code, response_body):
     response_body = response_body + '\n'
@@ -43,9 +57,7 @@ def good_request(start_response, response_body):
     return [response_body]
 
 def parse_api_conf():
-    aliases = {}
-    aliases['local'] = '127.0.0.1'
-    excludes = []
+    global aliases, excludes, limits
     for line in open('/etc/cvmfsmon/api.conf', 'r').read().split('\n'):
         words = line.split()
         if words:
@@ -54,10 +66,12 @@ def parse_api_conf():
                 aliases[parts[0]] = parts[1]
             elif words[0] == 'excluderepo':
                 excludes.append(words[1])
-    return aliases, excludes
+            elif words[0] == 'limit' and len(words) == 4:
+                parts = words[1].split('=')
+                limits[parts[0]] = int(parts[1])
 
 def dispatch(version, montests, parameters, start_response, environ):
-    aliases, excludes = parse_api_conf()
+    parse_api_conf()
 
     if 'server' in parameters:
         serveralias = parameters['server'][0]
@@ -71,28 +85,70 @@ def dispatch(version, montests, parameters, start_response, environ):
     socket.setdefaulttimeout(timeout_secs)
 
     url = 'http://' + server + '/cvmfs/info/v1/repositories.json'
+    replicas = []
     repos = []
     try:
-        request = urllib2.Request(url, headers={"Cache-control" : "max-age=60"})
+        request = urllib2.Request(url, 
+            headers={"Cache-control" : "max-age=" + str(request_max_secs)})
         json_data = urllib2.urlopen(request).read()
         repos_info = anyjson.deserialize(json_data)
         if 'replicas' in repos_info:
             for repo_info in repos_info['replicas']:
                 # the url always has the visible name
                 # use "str" to convert from unicode to string
+                replicas.append(str(repo_info['url'].replace('/cvmfs/','')))
+        if 'repositories' in repos_info:
+            for repo_info in repos_info['repositories']:
                 repos.append(str(repo_info['url'].replace('/cvmfs/','')))
     except:
         return error_request(start_response, '502 Bad Gateway', url + ' error: ' + str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1]))
 
     allresults = []
-    for repo in repos:
+    for repo in replicas + repos:
         if repo in excludes:
             continue
         results = []
         if montests == 'ok':
             results.append([ 'ok', repo, 'OK', '' ])
-        if (montests == "updated") or (montests == "all"):
-            results.append(cvmfsmon_updated.runtest(repo, 'http://' + server))
+            continue
+        errormsg = ""
+        doupdated = False
+        if (repo in replicas) and ((montests == "updated") or (montests == "all")):
+            doupdated = True
+        url = 'http://' + server + '/cvmfs/' + repo + '/.cvmfs_status.json'
+        try:
+            request = urllib2.Request(url, headers={"Cache-control" : "max-age=30"})
+            status_json = urllib2.urlopen(request).read()
+            repo_status = anyjson.deserialize(status_json)
+        except urllib2.HTTPError, e:
+            if e.code == 404:
+                if doupdated:
+                    # for backward compatibility, look for .cvmfs_last_snapshot
+                    #   if .cvmfs_status.json was not found
+                    try:
+                        url2 = 'http://' + server + '/cvmfs/' + repo + '/.cvmfs_last_snapshot'
+                        request = urllib2.Request(url2,
+                            headers={"Cache-control" : "max-age=" + str(request_max_secs)})
+                        snapshot_string = urllib2.urlopen(request).read()
+                        repo_status = {"last_snapshot": snapshot_string}
+                    except urllib2.HTTPError, e:
+                        if e.code == 404:
+                            errormsg = url + ' and .cvmfs_last_snapshot Not found'
+                        else:
+                            errormsg =  str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1])
+                    except:
+                        errormsg =  str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1])
+                else:
+                    errormsg = url + ' Not found'
+            else:
+                errormsg =  str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1])
+        except:
+            errormsg =  str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1])
+
+        if doupdated:
+            results.append(cvmfsmon_updated.runtest(repo, limits, repo_status, errormsg))
+        if (montests == "gc") or (montests == "all"):
+            results.append(cvmfsmon_gc.runtest(repo, limits, repo_status, errormsg))
         if results == []:
             return bad_request(start_response, 'unrecognized montests ' + montests)
         allresults.extend(results)
@@ -108,6 +164,8 @@ def dispatch(version, montests, parameters, start_response, environ):
     if format == 'status':
         worststatus = 'OK'
         for result in allresults:
+            if len(result) == 0:
+                continue
             status = result[2]
             if status == 'CRITICAL':
                 worststatus = 'CRITICAL'
@@ -117,6 +175,8 @@ def dispatch(version, montests, parameters, start_response, environ):
     elif format == 'details':
         details = {}
         for result in allresults:
+            if len(result) == 0:
+                continue
             test = result[0]
             status = result[2]
             repomsg = {'repo' : result[1], 'msg': result[3]}
@@ -137,6 +197,8 @@ def dispatch(version, montests, parameters, start_response, environ):
     else:  # list format
         repostatuses = {}
         for result in allresults:
+            if len(result) == 0:
+                continue
             repo = result[1]
             status = result[2]
             worststatus = 'OK'

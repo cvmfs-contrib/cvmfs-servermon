@@ -42,8 +42,13 @@ mkdir -p $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 install -p -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 
 %post
+%if %{rhel} < 7
 /sbin/service httpd status >/dev/null && /sbin/service httpd reload
-:
+%else
+if systemctl --quiet is-active httpd; then
+    systemctl reload httpd
+fi
+%endif
 
 %files
 %dir /etc/cvmfsmon
@@ -56,6 +61,10 @@ install -p -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 %changelog
 * Wed Nov 15 2017 Dave Dykstra <dwd@fnal.gov> - 1.5-1
 - Update to modern wsgi configuration
+- Add check for garbage collections that haven't been run in a long time
+- Add 'limit' option in api.conf to change the default warning and critical
+  times for each test
+- Use systemctl commands to reload apache on el7
 
 * Fri Nov 03 2017 Dave Dykstra <dwd@fnal.gov> - 1.4-2
 - Add %release_prefix macro to support openSUSE Build System
