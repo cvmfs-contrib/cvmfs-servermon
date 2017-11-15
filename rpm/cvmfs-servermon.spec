@@ -60,10 +60,11 @@ fi
 
 %changelog
 * Wed Nov 15 2017 Dave Dykstra <dwd@fnal.gov> - 1.5-1
-- Update to modern wsgi configuration
 - Add check for garbage collections that haven't been run in a long time
 - Add 'limit' option in api.conf to change the default warning and critical
   times for each test
+- Check api.conf once every minute and re-read it if it has changed
+- Update to modern wsgi configuration
 - Use systemctl commands to reload apache on el7
 
 * Fri Nov 03 2017 Dave Dykstra <dwd@fnal.gov> - 1.4-2

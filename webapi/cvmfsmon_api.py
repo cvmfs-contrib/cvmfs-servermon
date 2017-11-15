@@ -19,23 +19,20 @@
 #    an alias of a server as defined in /etc/cvmfsmon/api.conf
 
 import os, sys, socket, urllib2, anyjson, pprint, StringIO, string
+import time, threading
 import cvmfsmon_updated, cvmfsmon_gc
 
 negative_expire_secs = 60*2         # 2 minutes
 positive_expire_secs = 60*2         # 2 minutes
 timeout_secs = 5                    # tries twice for 5 seconds
 request_max_secs = 30               # maximum cache seconds when reading
+config_update_time = 60             # seconds between checking config file
 
-aliases = {
-    'local': '127.0.0.1'
-}
+conf_mod_time = 0
+last_config_time = 0
+aliases = {}
 excludes = []
-limits = {
-    'updated-warning': 8,
-    'updated-critical': 24,
-    'gc-warning': 10,
-    'gc-critical': 20
-}
+limits = {}
 
 def error_request(start_response, response_code, response_body):
     response_body = response_body + '\n'
@@ -58,20 +55,55 @@ def good_request(start_response, response_body):
 
 def parse_api_conf():
     global aliases, excludes, limits
-    for line in open('/etc/cvmfsmon/api.conf', 'r').read().split('\n'):
-        words = line.split()
-        if words:
-            if words[0] == 'serveralias':
-                parts = words[1].split('=')
-                aliases[parts[0]] = parts[1]
-            elif words[0] == 'excluderepo':
-                excludes.append(words[1])
-            elif words[0] == 'limit' and len(words) == 4:
-                parts = words[1].split('=')
-                limits[parts[0]] = int(parts[1])
+    global conf_mod_time
+    conffile = '/etc/cvmfsmon/api.conf'
+    try:
+        modtime = os.stat(conffile).st_mtime
+        if modtime == conf_mod_time:
+            # no change
+            return
+        conf_mod_time = modtime
+
+        aliases = { 'local' : '127.0.0.1' }
+        excludes = []
+        limits = {
+            'updated-warning': 8,
+            'updated-critical': 24,
+            'gc-warning': 10,
+            'gc-critical': 20
+        }
+
+        for line in open(conffile, 'r').read().split('\n'):
+            words = line.split()
+            if words:
+                if words[0] == 'serveralias' and len(words) > 1:
+                    parts = words[1].split('=')
+                    aliases[parts[0]] = parts[1]
+                elif words[0] == 'excluderepo':
+                    excludes.append(words[1])
+                elif words[0] == 'limit' and len(words) > 1:
+                    parts = words[1].split('=')
+                    limits[parts[0]] = int(parts[1])
+
+        print('processed ' + conffile)
+        print('aliases: ' + str(aliases))
+        print('excludes: ' + str(excludes))
+        print('limits: ' + str(limits))
+    except Exception, e:
+	print('error reading ' + conffile + ', continuing: ' + str(e))
+        conf_mod_time = 0
 
 def dispatch(version, montests, parameters, start_response, environ):
-    parse_api_conf()
+    now = time.time()
+    lock = threading.Lock()
+    lock.acquire()
+    global last_config_time
+    if now - config_update_time > last_config_time:
+        last_config_time = now
+        lock.release()
+        parse_api_conf()
+    else:
+        lock.release()
 
     if 'server' in parameters:
         serveralias = parameters['server'][0]
