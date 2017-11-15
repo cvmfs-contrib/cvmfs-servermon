@@ -1,0 +1,12 @@
+# Created by cvmfs_server.  Don't touch.
+Alias /cvmfsmon/api /var/www/wsgi-scripts/cvmfs-servermon/cvmfsmon-api.wsgi
+WSGIDaemonProcess cvmfsmon threads=4 display-name=%{GROUP} \
+    python-path=/usr/share/cvmfs-servermon/webapi
+<Directory /var/www/wsgi-scripts/cvmfs-servermon>
+  WSGIProcessGroup cvmfsmon
+  WSGIApplicationGroup cvmfsmon
+  Options ExecCGI
+  SetHandler wsgi-script
+  {ACCESS_CONTROL}
+</Directory>
+WSGISocketPrefix /var/run/wsgi

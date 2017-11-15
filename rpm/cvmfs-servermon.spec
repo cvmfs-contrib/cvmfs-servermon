@@ -22,6 +22,13 @@ cvmfs-server installations.
 %prep
 %setup -q
 
+%build
+%if %{rhel} < 7
+sed 's/{ACCESS_CONTROL}/Order allow,deny\n  Allow from all/' misc/cvmfsmon.conf.in >misc/cvmfsmon.conf
+%else
+sed 's/{ACCESS_CONTROL}/Require all granted/' misc/cvmfsmon.conf.in >misc/cvmfsmon.conf
+%endif
+
 %install
 mkdir -p $RPM_BUILD_ROOT/etc/cvmfsmon
 install -p -m 644 etc/* $RPM_BUILD_ROOT/etc/cvmfsmon
@@ -29,8 +36,8 @@ mkdir -p $RPM_BUILD_ROOT%{_sbindir}
 install -p -m 555 compat/* $RPM_BUILD_ROOT%{_sbindir}
 mkdir -p $RPM_BUILD_ROOT/etc/httpd/conf.d
 install -p -m 444 misc/cvmfsmon.conf $RPM_BUILD_ROOT/etc/httpd/conf.d
-mkdir -p $RPM_BUILD_ROOT/var/www/wsgi-scripts
-install -p -m 555 misc/cvmfsmon-api.wsgi $RPM_BUILD_ROOT/var/www/wsgi-scripts
+mkdir -p $RPM_BUILD_ROOT/var/www/wsgi-scripts/cvmfs-servermon
+install -p -m 555 misc/cvmfsmon-api.wsgi $RPM_BUILD_ROOT/var/www/wsgi-scripts/cvmfs-servermon
 mkdir -p $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 install -p -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 
@@ -56,6 +63,8 @@ fi
 - Add check for garbage collections that haven't been run in a long time
 - Add 'limit' option in api.conf to change the default warning and critical
   times for each test
+- Check api.conf once every minute and re-read it if it has changed
+- Update to modern wsgi configuration
 - Use systemctl commands to reload apache on el7
 
 * Fri Nov 03 2017 Dave Dykstra <dwd@fnal.gov> - 1.4-2
