@@ -1,10 +1,11 @@
 import datetime, dateutil.parser, dateutil.tz
 
-def runtest(repo, repo_status, errormsg):
-    warning_days = 10
-    critical_days = 20
-
+def runtest(repo, limits, repo_status, errormsg):
     testname = 'gc'
+
+    warning_days = limits[testname + '-warning']
+    critical_days = limits[testname + '-critical']
+
     if errormsg != "":
         if errormsg.endswith('Not found'):
             # ignore repos with a missing status file
