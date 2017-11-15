@@ -26,6 +26,17 @@ positive_expire_secs = 60*2         # 2 minutes
 timeout_secs = 5                    # tries twice for 5 seconds
 request_max_secs = 30               # maximum cache seconds when reading
 
+aliases = {
+    'local': '127.0.0.1'
+}
+excludes = []
+limits = {
+    'updated-warning': 8,
+    'updated-critical': 24,
+    'gc-warning': 10,
+    'gc-critical': 20
+}
+
 def error_request(start_response, response_code, response_body):
     response_body = response_body + '\n'
     start_response(response_code,
@@ -46,9 +57,7 @@ def good_request(start_response, response_body):
     return [response_body]
 
 def parse_api_conf():
-    aliases = {}
-    aliases['local'] = '127.0.0.1'
-    excludes = []
+    global aliases, excludes, limits
     for line in open('/etc/cvmfsmon/api.conf', 'r').read().split('\n'):
         words = line.split()
         if words:
@@ -57,10 +66,12 @@ def parse_api_conf():
                 aliases[parts[0]] = parts[1]
             elif words[0] == 'excluderepo':
                 excludes.append(words[1])
-    return aliases, excludes
+            elif words[0] == 'limit' and len(words) == 4:
+                parts = words[1].split('=')
+                limits[parts[0]] = int(parts[1])
 
 def dispatch(version, montests, parameters, start_response, environ):
-    aliases, excludes = parse_api_conf()
+    parse_api_conf()
 
     if 'server' in parameters:
         serveralias = parameters['server'][0]
@@ -135,9 +146,9 @@ def dispatch(version, montests, parameters, start_response, environ):
             errormsg =  str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1])
 
         if doupdated:
-            results.append(cvmfsmon_updated.runtest(repo, repo_status, errormsg))
+            results.append(cvmfsmon_updated.runtest(repo, limits, repo_status, errormsg))
         if (montests == "gc") or (montests == "all"):
-            results.append(cvmfsmon_gc.runtest(repo, repo_status, errormsg))
+            results.append(cvmfsmon_gc.runtest(repo, limits, repo_status, errormsg))
         if results == []:
             return bad_request(start_response, 'unrecognized montests ' + montests)
         allresults.extend(results)

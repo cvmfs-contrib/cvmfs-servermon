@@ -1,10 +1,11 @@
 import datetime, dateutil.parser, dateutil.tz
 
-def runtest(repo, repo_status, errormsg):
-    warning_hours = 8*60
-    critical_hours = 24*60
-
+def runtest(repo, limits, repo_status, errormsg):
     testname = 'updated'
+
+    warning_hours = limits[testname + '-warning']
+    critical_hours = limits[testname + '-critical']
+
     if errormsg != "":
         return [ testname, repo, 'CRITICAL', 'error: ' + errormsg]
     if 'last_snapshot' in repo_status:
@@ -17,7 +18,7 @@ def runtest(repo, repo_status, errormsg):
 
     now = datetime.datetime.now(dateutil.tz.tzutc())
     delta = now-lastdate
-    diff_hours = (delta.days * 24 * 60) + (delta.seconds / 60)
+    diff_hours = (delta.days * 24) + (delta.seconds / 3600)
 
     if diff_hours < warning_hours:
         status = 'OK'
