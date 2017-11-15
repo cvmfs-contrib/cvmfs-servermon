@@ -1,8 +1,8 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.4
+Version: 1.5
 # The release_prefix macro is used in the OBS prjconf, don't change its name
-%define release_prefix 2
+%define release_prefix 1
 Release: %{release_prefix}%{?dist}
 BuildArch: noarch
 Group: Applications/System
@@ -22,6 +22,13 @@ cvmfs-server installations.
 %prep
 %setup -q
 
+%build
+%if %{rhel} < 7
+sed 's/{ACCESS_CONTROL}/Order allow,deny\n  Allow from all/' misc/cvmfsmon.conf.in >misc/cvmfsmon.conf
+%else
+sed 's/{ACCESS_CONTROL}/Require all granted/' misc/cvmfsmon.conf.in >misc/cvmfsmon.conf
+%endif
+
 %install
 mkdir -p $RPM_BUILD_ROOT/etc/cvmfsmon
 install -p -m 644 etc/* $RPM_BUILD_ROOT/etc/cvmfsmon
@@ -29,8 +36,8 @@ mkdir -p $RPM_BUILD_ROOT%{_sbindir}
 install -p -m 555 compat/* $RPM_BUILD_ROOT%{_sbindir}
 mkdir -p $RPM_BUILD_ROOT/etc/httpd/conf.d
 install -p -m 444 misc/cvmfsmon.conf $RPM_BUILD_ROOT/etc/httpd/conf.d
-mkdir -p $RPM_BUILD_ROOT/var/www/wsgi-scripts
-install -p -m 555 misc/cvmfsmon-api.wsgi $RPM_BUILD_ROOT/var/www/wsgi-scripts
+mkdir -p $RPM_BUILD_ROOT/var/www/wsgi-scripts/cvmfs-servermon
+install -p -m 555 misc/cvmfsmon-api.wsgi $RPM_BUILD_ROOT/var/www/wsgi-scripts/cvmfs-servermon
 mkdir -p $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 install -p -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 
@@ -47,6 +54,9 @@ install -p -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 /usr/share/cvmfs-servermon
 
 %changelog
+* Wed Nov 15 2017 Dave Dykstra <dwd@fnal.gov> - 1.5-1
+- Update to modern wsgi configuration
+
 * Fri Nov 03 2017 Dave Dykstra <dwd@fnal.gov> - 1.4-2
 - Add %release_prefix macro to support openSUSE Build System
 
