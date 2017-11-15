@@ -1,8 +1,8 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.4
+Version: 1.5
 # The release_prefix macro is used in the OBS prjconf, don't change its name
-%define release_prefix 2
+%define release_prefix 1
 Release: %{release_prefix}%{?dist}
 BuildArch: noarch
 Group: Applications/System
@@ -47,6 +47,9 @@ install -p -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 /usr/share/cvmfs-servermon
 
 %changelog
+* Wed Nov 15 2017 Dave Dykstra <dwd@fnal.gov> - 1.5-1
+- Add check for garbage collections that haven't been run in a long time
+
 * Fri Nov 03 2017 Dave Dykstra <dwd@fnal.gov> - 1.4-2
 - Add %release_prefix macro to support openSUSE Build System
 
