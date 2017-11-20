@@ -147,6 +147,7 @@ def dispatch(version, montests, parameters, start_response, environ):
         doupdated = False
         if (repo in replicas) and ((montests == "updated") or (montests == "all")):
             doupdated = True
+        repo_status = {}
         url = 'http://' + server + '/cvmfs/' + repo + '/.cvmfs_status.json'
         try:
             request = urllib2.Request(url, headers={"Cache-control" : "max-age=30"})
