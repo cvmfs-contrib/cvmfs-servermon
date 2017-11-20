@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.5
+Version: 1.6
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -59,6 +59,10 @@ fi
 /usr/share/cvmfs-servermon
 
 %changelog
+* Mon Nov 20 2017 Dave Dykstra <dwd@fnal.gov> - 1.6-1
+- Fix bug causing an Internal Server Error when .cvmfs_status.json
+  (and .cvmfs_last_snapshot on a stratum 1) is missing.
+
 * Wed Nov 15 2017 Dave Dykstra <dwd@fnal.gov> - 1.5-1
 - Add check for garbage collections that haven't been run in a long time
 - Add 'limit' option in api.conf to change the default warning and critical
