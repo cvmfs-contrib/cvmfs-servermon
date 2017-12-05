@@ -7,7 +7,9 @@ def runtest(repo, limits, repo_status, errormsg):
     critical_hours = limits[testname + '-critical']
 
     if errormsg != "":
-        return [ testname, repo, 'CRITICAL', 'error: ' + errormsg]
+        if not errormsg.endswith('Not found'):
+            return [ testname, repo, 'CRITICAL', 'error: ' + errormsg]
+        # else Not found, treat it as initial snapshot in progress
     if 'last_snapshot' in repo_status:
         lastdate_string = repo_status['last_snapshot']
         if lastdate_string == '':
