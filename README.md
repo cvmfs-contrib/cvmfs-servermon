@@ -15,17 +15,16 @@ cvmfs-servermon can be configured to read from more than one remote
 machine, but by default it is configured to read from localhost and
 that\'s the easiest way to use it.
 
-If you have a good idea for extension or have any questions please create a
-[new github issue](https://github.com/cvmfs-contrib/cvmfs-servermon/issues).
+If you have a good idea for extension or have any problems please create a
+[github issue](https://github.com/cvmfs-contrib/cvmfs-servermon/issues).
 
 Installation and configuration
 ------------------------------
 
 To install on a RHEL6-compatible or RHEL7-compatible machine, do the
 following. If you have not yet set up the cvmfs-contrib repository,
-first do that:
-
-    # yum install -y https://ecsft.cern.ch/dist/cvmfs/cvmfs-contrib-release/cvmfs-contrib-release-latest.noarch.rpm
+first do that as instructed on the
+[cvmfs-contrib home page](https://cvmfs-contrib.github.io)
 
 Then install cvmfs-servermon:
 
@@ -115,9 +114,10 @@ mailing list. For a graphical history it also uploads the status to
 [here](https://itmon.web.cern.ch/itmon/recipes/how_to_publish_service_metrics.html) and
 [here](https://itmon.web.cern.ch/itmon/recipes/how_to_create_a_service_xml.html).
 If you'd like a change to the stratum 1s that are monitored, contact
-@DrDaveD. In order to be monitored, a stratum 1 needs to either be
-running cvmfs-server-2.2.X or later, or have cvmfs-servermon installed
-(or both).
+[cvmfs-servermon-support@cern.ch](mailto:cvmfs-servermon-support@cern.ch).
+In order to be monitored, a stratum 1 needs to either be running
+cvmfs-server-2.2.X or later, or have cvmfs-servermon installed (or
+both).
 
 The machine at CERN that is doing the probes is wlcg-squid-monitor.cern.ch.
 cvmfs-servermon is installed there, so it can read the status remotely
