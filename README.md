@@ -1,5 +1,5 @@
-Stratum One monitoring assist
-=============================
+CVMFS Stratum One monitoring assist
+===================================
 
 To assist with monitoring cvmfs servers, there is a separate rpm
 called \"cvmfs-servermon\". It interprets conditions on cvmfs servers
@@ -8,7 +8,7 @@ aspects on Stratum 1 servers (serving \"replicas\") and one on Stratum
 0 servers (a.k.a \"release managers\"), and it is designed to be
 extended as more test cases are added. It is intended to be very easy
 to tie into any local monitoring system that can probe over http.  There
-is also a [monitoring probe at CERN](#CERN_XSLS_availability_monitor)
+is also a [monitoring probe at CERN](#cern-xsls-availability-monitor)
 that uses the interface to monitor many stratum 1s.
 
 cvmfs-servermon can be configured to read from more than one remote
@@ -39,8 +39,8 @@ the comments in the file.
 If you are using a shared cvmfs httpd configuration file and not letting
 the cvmfs\_server command manage the httpd configuration itself, then it
 needs a small modification. In particular, with the configuration
-recommended on the [StratumOnes twiki]
-(https://twiki.cern.ch/twiki/bin/view/CvmFS/StratumOnes#2_1_X_Configuration),
+recommended on the
+[StratumOnes twiki](https://twiki.cern.ch/twiki/bin/view/CvmFS/StratumOnes#2_1_X_Configuration),
 add `:/usr/share/cvmfs-servermon/webapi` to the end of the
 WSGIDaemonProcess python-path. Reload httpd after making that change.
 
@@ -93,10 +93,10 @@ Examples
 
 Try clicking on the following or reading them with curl or wget:
 
--   <http://hcc-cvmfs.unl.edu/cvmfsmon/api/v1.0/all&format=status>
--   <http://hcc-cvmfs.unl.edu/cvmfsmon/api/v1.0/ok>
--   <http://hcc-cvmfs.unl.edu/cvmfsmon/api/v1.0/all>
--   <http://hcc-cvmfs.unl.edu/cvmfsmon/api/v1.0/all&format=details>
+- <http://hcc-cvmfs.unl.edu/cvmfsmon/api/v1.0/all&format=status>
+- <http://hcc-cvmfs.unl.edu/cvmfsmon/api/v1.0/ok>
+- <http://hcc-cvmfs.unl.edu/cvmfsmon/api/v1.0/all>
+- <http://hcc-cvmfs.unl.edu/cvmfsmon/api/v1.0/all&format=details>
 
 
 CERN XSLS availability monitor
@@ -109,17 +109,15 @@ cvmfs-servermon. The CERN monitoring system runs every 15 minutes, and
 whenever the status has changed for two probes in a row it sends an
 email to the
 [cvmfs-stratum-alarm@cern.ch](mailto:cvmfs-stratum-alarm@cern.ch)
-mailing list. For a
-graphical history it also uploads the status to [CERN\'s kibana-based
-XSLS availability website]
-(https://meter.cern.ch/public/_plugin/kibana/#/dashboard/elasticsearch/Metrics:%20Availability?query=cvmfs_stratum1mon*)
+mailing list. For a graphical history it also uploads the status to
+[CERN\'s kibana-based XSLS availability website](https://meter.cern.ch/public/_plugin/kibana/#/dashboard/elasticsearch/Metrics:%20Availability?query=cvmfs_stratum1mon*)
 (via the mechanism documented
 [here](https://itmon.web.cern.ch/itmon/recipes/how_to_publish_service_metrics.html) and
 [here](https://itmon.web.cern.ch/itmon/recipes/how_to_create_a_service_xml.html).
 If you'd like a change to the stratum 1s that are monitored, contact
-[DaveDykstra](@DrDaveD). In order to be monitored, a stratum 1 needs to
-either be running cvmfs-server-2.2.X or later, or have cvmfs-servermon
-installed (or both).
+@DrDaveD. In order to be monitored, a stratum 1 needs to either be
+running cvmfs-server-2.2.X or later, or have cvmfs-servermon installed
+(or both).
 
 The machine at CERN that is doing the probes is wlcg-squid-monitor.cern.ch.
 cvmfs-servermon is installed there, so it can read the status remotely
