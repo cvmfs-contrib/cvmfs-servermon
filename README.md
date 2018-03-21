@@ -24,7 +24,7 @@ Installation and configuration
 To install on a RHEL6-compatible or RHEL7-compatible machine, do the
 following. If you have not yet set up the cvmfs-contrib repository,
 first do that as instructed on the
-[cvmfs-contrib home page](https://cvmfs-contrib.github.io)
+[cvmfs-contrib home page](https://cvmfs-contrib.github.io).
 
 Then install cvmfs-servermon:
 
