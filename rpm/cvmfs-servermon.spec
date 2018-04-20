@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.7
+Version: 1.8
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -59,6 +59,10 @@ fi
 /usr/share/cvmfs-servermon
 
 %changelog
+* Fri Apr 20 2018 Dave Dykstra <dwd@fnal.gov> - 1.8-1
+- Remove reference to an obsolete variable name in the error message about
+  an empty snapshot file.
+
 * Tue Dec 05 2017 Dave Dykstra <dwd@fnal.gov> - 1.7-1
 - Restore the behavior of treating missing status files as "Initial 
   snapshot in progress".
