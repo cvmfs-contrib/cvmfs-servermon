@@ -13,7 +13,7 @@ def runtest(repo, limits, repo_status, errormsg):
     if 'last_snapshot' in repo_status:
         lastdate_string = repo_status['last_snapshot']
         if lastdate_string == '':
-          return [ testname, repo, 'CRITICAL', url + ' error: empty snapshot date' ]
+          return [ testname, repo, 'CRITICAL', 'error: empty snapshot date' ]
         lastdate = dateutil.parser.parse(lastdate_string)
     else:
         return [ testname, repo, 'OK', 'initial snapshot in progress' ]
