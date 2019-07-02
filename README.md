@@ -109,7 +109,7 @@ whenever the status has changed for two probes in a row it sends an
 email to the
 [cvmfs-stratum-alarm@cern.ch](mailto:cvmfs-stratum-alarm@cern.ch)
 mailing list. For a graphical history it also uploads the status to
-[CERN\'s kibana-based XSLS availability website](https://meter.cern.ch/public/_plugin/kibana/#/dashboard/elasticsearch/Metrics:%20Availability?query=cvmfs_stratum1mon*)
+[CERN\'s grifana-based Service availability website](https://monit-grafana.cern.ch/d/000000855/overview-service-availability?orgId=1&var-isfe=All&var-regexp=cvmfs_stratum1mon*)
 (via the mechanism documented
 [here](https://itmon.web.cern.ch/itmon/recipes/how_to_publish_service_metrics.html) and
 [here](https://itmon.web.cern.ch/itmon/recipes/how_to_create_a_service_xml.html).
