@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.8
+Version: 1.9
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -59,6 +59,10 @@ fi
 /usr/share/cvmfs-servermon
 
 %changelog
+* Fri Jul 05 2019 Dave Dykstra <dwd@fnal.gov> - 1.9-1
+- Fix thread locking while reading the configuration file; it was
+  previously non-functional.
+
 * Fri Apr 20 2018 Dave Dykstra <dwd@fnal.gov> - 1.8-1
 - Remove reference to an obsolete variable name in the error message about
   an empty snapshot file.
