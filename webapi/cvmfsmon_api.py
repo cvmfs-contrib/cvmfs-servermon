@@ -94,16 +94,14 @@ def parse_api_conf():
         conf_mod_time = 0
 
 def dispatch(version, montests, parameters, start_response, environ):
+    global last_config_time
     now = time.time()
     lock = threading.Lock()
     lock.acquire()
-    global last_config_time
     if now - config_update_time > last_config_time:
         last_config_time = now
-        lock.release()
         parse_api_conf()
-    else:
-        lock.release()
+    lock.release()
 
     if 'server' in parameters:
         serveralias = parameters['server'][0]
