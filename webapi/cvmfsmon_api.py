@@ -33,6 +33,7 @@ last_config_time = 0
 aliases = {}
 excludes = []
 limits = {}
+lock = threading.Lock()
 
 def error_request(start_response, response_code, response_body):
     response_body = response_body + '\n'
@@ -96,7 +97,6 @@ def parse_api_conf():
 def dispatch(version, montests, parameters, start_response, environ):
     global last_config_time
     now = time.time()
-    lock = threading.Lock()
     lock.acquire()
     if now - config_update_time > last_config_time:
         last_config_time = now
