@@ -1,3 +1,4 @@
+import sys
 import datetime, dateutil.parser, dateutil.tz
 
 def runtest(repo, limits, repo_status, errormsg):
@@ -15,7 +16,11 @@ def runtest(repo, limits, repo_status, errormsg):
         lastdate_string = repo_status['last_gc']
         if lastdate_string == '':
           return [ testname, repo, 'CRITICAL', url + ' error: empty gc date' ]
-        lastdate = dateutil.parser.parse(lastdate_string)
+        try:
+            lastdate = dateutil.parser.parse(lastdate_string)
+        except:
+            msg =  str(str(sys.exc_info()[1]))
+            return [ testname, repo, 'CRITICAL', 'error parsing date: ' + msg]
     else:
         # ignore repos without a last_gc
         return []
