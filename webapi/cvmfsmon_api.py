@@ -131,7 +131,7 @@ def dispatch(version, montests, parameters, start_response, environ):
             for repo_info in repos_info['repositories']:
                 repos.append(str(repo_info['url'].replace('/cvmfs/','')))
     except:
-        return error_request(start_response, '502 Bad Gateway', url + ' error: ' + str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1]))
+        return error_request(start_response, '502 Bad Gateway', url + ' error: ' + str(sys.exc_info()[1]))
 
     allresults = []
     for repo in replicas + repos:
@@ -166,15 +166,15 @@ def dispatch(version, montests, parameters, start_response, environ):
                         if e.code == 404:
                             errormsg = url + ' and .cvmfs_last_snapshot Not found'
                         else:
-                            errormsg =  str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1])
+                            errormsg =  str(sys.exc_info()[1])
                     except:
-                        errormsg =  str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1])
+                        errormsg =  str(sys.exc_info()[1])
                 else:
                     errormsg = url + ' Not found'
             else:
-                errormsg =  str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1])
+                errormsg =  str(sys.exc_info()[1])
         except:
-            errormsg =  str(sys.exc_info()[0]) + ' ' + str(sys.exc_info()[1])
+            errormsg =  str(sys.exc_info()[1])
 
         if doupdated:
             results.append(cvmfsmon_updated.runtest(repo, limits, repo_status, errormsg))
