@@ -1,3 +1,4 @@
+import sys
 import datetime, dateutil.parser, dateutil.tz
 
 def runtest(repo, limits, repo_status, errormsg):
@@ -14,7 +15,11 @@ def runtest(repo, limits, repo_status, errormsg):
         lastdate_string = repo_status['last_snapshot']
         if lastdate_string == '':
           return [ testname, repo, 'CRITICAL', 'error: empty snapshot date' ]
-        lastdate = dateutil.parser.parse(lastdate_string)
+        try:
+            lastdate = dateutil.parser.parse(lastdate_string)
+        except:
+            msg =  str(str(sys.exc_info()[1]))
+            return [ testname, repo, 'CRITICAL', 'error parsing date: ' + msg]
     else:
         return [ testname, repo, 'OK', 'initial snapshot in progress' ]
 
