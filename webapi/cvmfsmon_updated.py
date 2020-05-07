@@ -7,6 +7,8 @@ def runtest(repo, limits, repo_status, errormsg):
     warning_hours = limits[testname + '-warning']
     critical_hours = limits[testname + '-critical']
 
+    msg = ''
+    multiplier = 1
     if errormsg != "":
         if not errormsg.endswith('Not found'):
             return [ testname, repo, 'CRITICAL', 'error: ' + errormsg]
@@ -19,24 +21,38 @@ def runtest(repo, limits, repo_status, errormsg):
             lastdate = dateutil.parser.parse(lastdate_string)
         except:
             msg =  str(str(sys.exc_info()[1]))
-            return [ testname, repo, 'CRITICAL', 'error parsing date: ' + msg]
+            return [ testname, repo, 'CRITICAL', 'error parsing last_snapshot date: ' + msg]
     else:
-        return [ testname, repo, 'OK', 'initial snapshot in progress' ]
+        # no 'last_snapshot' found in .cvmfs_status.json
+        if 'snapshotting_since' not in repo_status:
+            return [ testname, repo, 'WARNING', 'initial snapshot not in progress' ]
+        lastdate_string = repo_status['snapshotting_since']
+        if lastdate_string == '':
+          return [ testname, repo, 'CRITICAL', 'error: empty .cvmfs_is_snapshotting' ]
+        try:
+            lastdate = dateutil.parser.parse(lastdate_string)
+        except:
+            msg =  str(str(sys.exc_info()[1]))
+            return [ testname, repo, 'CRITICAL', 'error parsing .cvmfs_is_snapshotting date: ' + msg]
+
+        msg = 'initial snapshot started'
+        # turn 8 hours into 3 days and 24 hours into 9 days
+        multiplier = 9
 
     now = datetime.datetime.now(dateutil.tz.tzutc())
-    delta = now-lastdate
+    delta = now - lastdate
     diff_hours = (delta.days * 24) + (delta.seconds / 3600)
 
-    if diff_hours < warning_hours:
+    if diff_hours < (warning_hours * multiplier):
         status = 'OK'
-    elif diff_hours < critical_hours:
+    elif diff_hours < (critical_hours * multiplier):
         status = 'WARNING'
     else:
         status = 'CRITICAL'
 
-    if status == 'OK':
-        msg = ''
-    else:
-        msg = 'last successful snapshot ' + str(diff_hours) + ' hours ago'
+    if status != 'OK':
+        if msg == '':
+            msg = 'last successful snapshot'
+        msg += ' ' + str(diff_hours) + ' hours ago'
 
     return [ testname, repo, status, msg ]

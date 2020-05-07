@@ -117,9 +117,9 @@ def dispatch(version, montests, parameters, start_response, environ):
     url = 'http://' + server + '/cvmfs/info/v1/repositories.json'
     replicas = []
     repos = []
+    headers={"Cache-control" : "max-age=" + str(request_max_secs)}
     try:
-        request = urllib2.Request(url, 
-            headers={"Cache-control" : "max-age=" + str(request_max_secs)})
+        request = urllib2.Request(url, headers=headers)
         json_data = urllib2.urlopen(request).read()
         repos_info = anyjson.deserialize(json_data)
         if 'replicas' in repos_info:
@@ -146,9 +146,10 @@ def dispatch(version, montests, parameters, start_response, environ):
         if (repo in replicas) and ((montests == "updated") or (montests == "all")):
             doupdated = True
         repo_status = {}
-        url = 'http://' + server + '/cvmfs/' + repo + '/.cvmfs_status.json'
+        repourl = 'http://' + server + '/cvmfs/' + repo
+        url = repourl + '/.cvmfs_status.json'
         try:
-            request = urllib2.Request(url, headers={"Cache-control" : "max-age=30"})
+            request = urllib2.Request(url, headers=headers)
             status_json = urllib2.urlopen(request).read()
             repo_status = anyjson.deserialize(status_json)
         except urllib2.HTTPError, e:
@@ -157,11 +158,10 @@ def dispatch(version, montests, parameters, start_response, environ):
                     # for backward compatibility, look for .cvmfs_last_snapshot
                     #   if .cvmfs_status.json was not found
                     try:
-                        url2 = 'http://' + server + '/cvmfs/' + repo + '/.cvmfs_last_snapshot'
-                        request = urllib2.Request(url2,
-                            headers={"Cache-control" : "max-age=" + str(request_max_secs)})
+                        url2 = repourl + '/.cvmfs_last_snapshot'
+                        request = urllib2.Request(url2, headers=headers)
                         snapshot_string = urllib2.urlopen(request).read()
-                        repo_status = {"last_snapshot": snapshot_string}
+                        repo_status['last_snapshot'] = snapshot_string
                     except urllib2.HTTPError, e:
                         if e.code == 404:
                             errormsg = url + ' and .cvmfs_last_snapshot Not found'
@@ -177,6 +177,15 @@ def dispatch(version, montests, parameters, start_response, environ):
             errormsg =  str(sys.exc_info()[1])
 
         if doupdated:
+            if 'last_snapshot' not in repo_status:
+                # no complete snapshot, look up snapshotting status
+                try:
+                    url2 = repourl + '/.cvmfs_is_snapshotting'
+                    request = urllib2.Request(url2, headers=headers)
+                    snapshotting_string = urllib2.urlopen(request).read()
+                    repo_status['snapshotting_since'] = snapshotting_string
+                except:
+                    pass
             results.append(cvmfsmon_updated.runtest(repo, limits, repo_status, errormsg))
         if (montests == "gc") or (montests == "all"):
             results.append(cvmfsmon_gc.runtest(repo, limits, repo_status, errormsg))
