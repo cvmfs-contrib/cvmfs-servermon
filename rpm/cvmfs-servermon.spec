@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.11
+Version: 1.12
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -59,6 +59,10 @@ fi
 /usr/share/cvmfs-servermon
 
 %changelog
+* Mon May 11 2020 Dave Dykstra <dwd@fnal.gov> - 1.12-1
+- Work around bug in cvmfs_server prior to 2.7.3 that caused the 
+  last_snapshot status to be deleted when last_gc was updated.
+
 * Thu May 07 2020 Dave Dykstra <dwd@fnal.gov> - 1.11-1
 - Add check for long-running initial snapshots.  Multiply the number of
   hours by 9, so by default warnings come in 3 days and critical errors
