@@ -124,9 +124,11 @@ def dispatch(version, montests, parameters, start_response, environ):
         repos_info = anyjson.deserialize(json_data)
         if 'replicas' in repos_info:
             for repo_info in repos_info['replicas']:
-                # the url always has the visible name
-                # use "str" to convert from unicode to string
-                replicas.append(str(repo_info['url'].replace('/cvmfs/','')))
+                if 'pass-through' not in repo_info or not repo_info['pass-through']:
+                    # monitor it if it is not a pass-through mode replica
+                    # the url always has the visible name
+                    # use "str" to convert from unicode to string
+                    replicas.append(str(repo_info['url'].replace('/cvmfs/','')))
         if 'repositories' in repos_info:
             for repo_info in repos_info['repositories']:
                 repos.append(str(repo_info['url'].replace('/cvmfs/','')))
