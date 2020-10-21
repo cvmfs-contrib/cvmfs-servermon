@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.13
+Version: 1.14
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -11,9 +11,16 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Source0: https://github.com/cvmfs/%{name}/archive/%{name}-%{version}.tar.gz
 
 Requires: httpd
+%if %{rhel} > 7
+Requires: python3
+Requires: python3-mod_wsgi
+Requires: python3-anyjson
+Requires: python3-dateutil
+%else
 Requires: mod_wsgi
 Requires: python-anyjson
 Requires: python-dateutil
+%endif
 
 %description
 Provides an api for monitoring a cvmfs-server installation or multiple
@@ -43,7 +50,9 @@ install -p -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 
 %post
 %if %{rhel} < 7
-/sbin/service httpd status >/dev/null && /sbin/service httpd reload
+if /sbin/service httpd status >/dev/null; then
+    /sbin/service httpd reload
+fi
 %else
 if systemctl --quiet is-active httpd; then
     systemctl reload httpd
@@ -59,6 +68,9 @@ fi
 /usr/share/cvmfs-servermon
 
 %changelog
+* Tue Oct 20 2020 Dave Dykstra <dwd@fnal.gov> - 1.14-1
+- Make compatible with python3, and use it on el8.
+
 * Tue Jul 28 2020 Dave Dykstra <dwd@fnal.gov> - 1.13-1
 - Add support for "pass-through" boolean in repositories.json; do not
   monitor the repository if it is set to true.
