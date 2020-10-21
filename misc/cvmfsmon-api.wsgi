@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-
 import os, sys, re
 import cvmfsmon_api
 import cgi
