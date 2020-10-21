@@ -18,9 +18,18 @@
 #  server - value is either 'local' (the default, indicating localhost) or
 #    an alias of a server as defined in /etc/cvmfsmon/api.conf
 
-import os, sys, socket, urllib2, anyjson, pprint, StringIO, string
+from __future__ import print_function
+
+import os, sys, socket, anyjson, pprint, string
 import time, threading
 import cvmfsmon_updated, cvmfsmon_gc
+
+try:
+    from urllib import request as urllib_request
+    from io import StringIO
+except ImportError:  # python < 3
+    import urllib2 as urllib_request
+    from StringIO import StringIO
 
 negative_expire_secs = 60*2         # 2 minutes
 positive_expire_secs = 60*2         # 2 minutes
@@ -37,6 +46,7 @@ lock = threading.Lock()
 
 def error_request(start_response, response_code, response_body):
     response_body = response_body + '\n'
+    response_body = response_body.encode('utf-8')
     start_response(response_code,
                    [('Cache-control', 'max-age=' + str(negative_expire_secs)),
                     ('Content-Length', str(len(response_body)))])
@@ -48,6 +58,7 @@ def bad_request(start_response, reason):
 
 def good_request(start_response, response_body):
     response_code = '200 OK'
+    response_body = response_body.encode('utf-8')
     start_response(response_code,
                   [('Content-Type', 'text/plain'),
                    ('Cache-Control', 'max-age=' + str(positive_expire_secs)),
@@ -90,8 +101,8 @@ def parse_api_conf():
         print('aliases: ' + str(aliases))
         print('excludes: ' + str(excludes))
         print('limits: ' + str(limits))
-    except Exception, e:
-	print('error reading ' + conffile + ', continuing: ' + str(e))
+    except Exception as e:
+        print('error reading ' + conffile + ', continuing: ' + str(e))
         conf_mod_time = 0
 
 def dispatch(version, montests, parameters, start_response, environ):
@@ -119,8 +130,8 @@ def dispatch(version, montests, parameters, start_response, environ):
     repos = []
     headers={"Cache-control" : "max-age=" + str(request_max_secs)}
     try:
-        request = urllib2.Request(url, headers=headers)
-        json_data = urllib2.urlopen(request).read()
+        request = urllib_request.Request(url, headers=headers)
+        json_data = urllib_request.urlopen(request).read().decode('utf-8')
         repos_info = anyjson.deserialize(json_data)
         if 'replicas' in repos_info:
             for repo_info in repos_info['replicas']:
@@ -152,20 +163,20 @@ def dispatch(version, montests, parameters, start_response, environ):
         url = repourl + '/.cvmfs_status.json'
         status_json = ""
         try:
-            request = urllib2.Request(url, headers=headers)
-            status_json = urllib2.urlopen(request).read()
+            request = urllib_request.Request(url, headers=headers)
+            status_json = urllib_request.urlopen(request).read().decode('utf-8')
             repo_status = anyjson.deserialize(status_json)
-        except urllib2.HTTPError, e:
+        except urllib_request.HTTPError as e:
             if e.code == 404:
                 if doupdated:
                     # for backward compatibility, look for .cvmfs_last_snapshot
                     #   if .cvmfs_status.json was not found
                     try:
                         url2 = repourl + '/.cvmfs_last_snapshot'
-                        request = urllib2.Request(url2, headers=headers)
-                        snapshot_string = urllib2.urlopen(request).read()
+                        request = urllib_request.Request(url2, headers=headers)
+                        snapshot_string = urllib_request.urlopen(request).read().decode('utf-8')
                         repo_status['last_snapshot'] = snapshot_string
-                    except urllib2.HTTPError, e:
+                    except urllib_request.HTTPError as e:
                         if e.code == 404:
                             errormsg = url + ' and .cvmfs_last_snapshot Not found'
                         else:
@@ -190,8 +201,8 @@ def dispatch(version, montests, parameters, start_response, environ):
                     # no complete snapshot, look up snapshotting status
                     try:
                         url2 = repourl + '/.cvmfs_is_snapshotting'
-                        request = urllib2.Request(url2, headers=headers)
-                        snapshotting_string = urllib2.urlopen(request).read()
+                        request = urllib_request.Request(url2, headers=headers)
+                        snapshotting_string = urllib_request.urlopen(request).read().decode('utf-8')
                         repo_status['snapshotting_since'] = snapshotting_string
                     except:
                         pass
@@ -238,11 +249,11 @@ def dispatch(version, montests, parameters, start_response, environ):
                 details[status] = {}
                 details[status][test] = [repomsg]
 
-        output = StringIO.StringIO()
+        output = StringIO()
         pprint.pprint(details, output)
         body = output.getvalue()
         output.close()
-        body = string.replace(body,"'", '"')
+        body = body.replace("'", '"')
     else:  # list format
         repostatuses = {}
         for result in allresults:
