@@ -41,7 +41,7 @@ def runtest(repo, limits, repo_status, errormsg):
 
     now = datetime.datetime.now(dateutil.tz.tzutc())
     delta = now - lastdate
-    diff_hours = (delta.days * 24) + (delta.seconds / 3600)
+    diff_hours = (delta.days * 24) + int(delta.seconds / 3600)
 
     if diff_hours < (warning_hours * multiplier):
         status = 'OK'
