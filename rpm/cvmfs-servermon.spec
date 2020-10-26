@@ -2,7 +2,7 @@ Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
 Version: 1.14
 # The release_prefix macro is used in the OBS prjconf, don't change its name
-%define release_prefix 1
+%define release_prefix 2
 Release: %{release_prefix}%{?dist}
 BuildArch: noarch
 Group: Applications/System
@@ -58,6 +58,8 @@ if systemctl --quiet is-active httpd; then
     systemctl reload httpd
 fi
 %endif
+# Allow our httpd module to read from the network when SELinux is enabled
+setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 
 %files
 %dir /etc/cvmfsmon
@@ -68,6 +70,10 @@ fi
 /usr/share/cvmfs-servermon
 
 %changelog
+* Mon Oct 26 2020 Dave Dykstra <dwd@fnal.gov> - 1.14-2
+- Add 'setsebool -P httpd_can_network_connect 1' to %post rules to
+  make work with SELinux.
+
 * Tue Oct 20 2020 Dave Dykstra <dwd@fnal.gov> - 1.14-1
 - Make compatible with python3, and use it on el8.
 
