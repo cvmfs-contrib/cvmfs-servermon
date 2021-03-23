@@ -1,8 +1,8 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.14
+Version: 1.15
 # The release_prefix macro is used in the OBS prjconf, don't change its name
-%define release_prefix 2
+%define release_prefix 1
 Release: %{release_prefix}%{?dist}
 BuildArch: noarch
 Group: Applications/System
@@ -70,6 +70,9 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 /usr/share/cvmfs-servermon
 
 %changelog
+* Tue Mar 23 2021 Dave Dykstra <dwd@fnal.gov> - 1.15-1
+- Support common short timezone abbreviations in .cvmfs_is_snapshotting
+
 * Mon Oct 26 2020 Dave Dykstra <dwd@fnal.gov> - 1.14-2
 - Add 'setsebool -P httpd_can_network_connect 1' to %post rules to
   make work with SELinux.
