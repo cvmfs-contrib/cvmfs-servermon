@@ -21,7 +21,7 @@ If you have a good idea for extension or have any problems please create a
 Installation and configuration
 ------------------------------
 
-To install on a RHEL6-compatible or RHEL7-compatible machine, do the
+To install on a RHEL7-compatible or RHEL8-compatible machine, do the
 following. If you have not yet set up the cvmfs-contrib repository,
 first do that as instructed on the
 [cvmfs-contrib home page](https://cvmfs-contrib.github.io).
