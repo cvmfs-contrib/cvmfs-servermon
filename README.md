@@ -70,6 +70,8 @@ The web API is very simple. URLs are of the following format:
     will be in CRITICAL condition if the last successful garbage
     collection was more than 20 days ago. The limits can be changed in
     `/etc/cvmfsmon/api.conf`.
+5.  \"geo\" - verifies that the geo api on a stratum 1 successfully
+    responds with a server order for a test case on one repository.
 
 The params are all optional. The currently supported params are:
 
