@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.15
+Version: 1.16
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -70,6 +70,9 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 /usr/share/cvmfs-servermon
 
 %changelog
+* Thu Sep 30 2021 Edita Kizinevic <edita.kizinevic@cern.ch> - 1.16-1
+- Add monitor for stratum 1 geo api.
+
 * Tue Mar 23 2021 Dave Dykstra <dwd@fnal.gov> - 1.15-1
 - Support common short timezone abbreviations in .cvmfs_is_snapshotting
 

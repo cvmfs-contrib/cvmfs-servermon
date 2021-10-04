@@ -22,7 +22,7 @@ from __future__ import print_function
 
 import os, sys, socket, anyjson, pprint, string
 import time, threading
-import cvmfsmon_updated, cvmfsmon_gc
+import cvmfsmon_updated, cvmfsmon_gc, cvmfsmon_geo
 
 try:
     from urllib import request as urllib_request
@@ -147,7 +147,14 @@ def dispatch(version, montests, parameters, start_response, environ):
         return error_request(start_response, '502 Bad Gateway', url + ' error: ' + str(sys.exc_info()[1]))
 
     allresults = []
-    for repo in replicas + repos:
+    if replicas and montests in ('geo', 'all'):
+        allresults.append(cvmfsmon_geo.runtest(replicas[0], server, headers))
+
+    replicas_and_repos = []
+    if montests != 'geo':
+        replicas_and_repos = replicas + repos
+
+    for repo in replicas_and_repos:
         if repo in excludes:
             continue
         results = []
