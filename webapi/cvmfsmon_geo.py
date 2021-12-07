@@ -16,7 +16,7 @@ def runtest(repo, server, headers):
         status = 'OK' if output == '2,1,3' else 'WARNING'
     except Exception as e:
         status = 'CRITICAL'
-        msg = e
+        msg = str(e)
 
     return [ 'geo', repo, status, msg ]
 
