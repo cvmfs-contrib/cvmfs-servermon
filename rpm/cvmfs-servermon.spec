@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.17
+Version: 1.18
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -70,6 +70,9 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 /usr/share/cvmfs-servermon
 
 %changelog
+* Mon Dec 13 2021 Edita Kizinevic <edita.kizinevic@cern.ch> - 1.18-1
+- Add a subdirectory to the URL used for reading .cvmfs_status.json.
+
 * Tue Nov  7 2021 Edita Kizinevic <edita.kizinevic@cern.ch> - 1.17-1
 - Fix the error message for geo api exceptions to be a string instead
   of a python object (which messed up the json output)
