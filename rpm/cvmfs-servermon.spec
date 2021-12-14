@@ -71,7 +71,7 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 
 %changelog
 * Mon Dec 13 2021 Edita Kizinevic <edita.kizinevic@cern.ch> - 1.18-1
-- Add a subdirectory to the URL used for reading .cvmfs_status.json.
+- Add an optional subdirectory to the URL used for reading .cvmfs_status.json.
 
 * Tue Nov  7 2021 Edita Kizinevic <edita.kizinevic@cern.ch> - 1.17-1
 - Fix the error message for geo api exceptions to be a string instead
