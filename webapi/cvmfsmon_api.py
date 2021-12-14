@@ -68,6 +68,7 @@ def good_request(start_response, response_body):
 def parse_api_conf():
     global aliases, excludes, limits
     global conf_mod_time
+    global subdirectories
     conffile = '/etc/cvmfsmon/api.conf'
     try:
         modtime = os.stat(conffile).st_mtime
@@ -84,13 +85,18 @@ def parse_api_conf():
             'gc-warning': 10,
             'gc-critical': 20
         }
+        subdirectories = {}
 
         for line in open(conffile, 'r').read().split('\n'):
             words = line.split()
             if words:
                 if words[0] == 'serveralias' and len(words) > 1:
                     parts = words[1].split('=')
-                    aliases[parts[0]] = parts[1]
+                    subparts = parts[1].split('/', 1)
+                    server = subparts[0]
+                    aliases[parts[0]] = server
+                    if len(subparts) > 1:
+                        subdirectories[server] = subparts[1]
                 elif words[0] == 'excluderepo':
                     excludes.append(words[1])
                 elif words[0] == 'limit' and len(words) > 1:
@@ -101,6 +107,7 @@ def parse_api_conf():
         print('aliases: ' + str(aliases))
         print('excludes: ' + str(excludes))
         print('limits: ' + str(limits))
+        print('subdirectories: ' + str(subdirectories))
     except Exception as e:
         print('error reading ' + conffile + ', continuing: ' + str(e))
         conf_mod_time = 0
@@ -167,6 +174,8 @@ def dispatch(version, montests, parameters, start_response, environ):
             doupdated = True
         repo_status = {}
         repourl = 'http://' + server + '/cvmfs/' + repo
+        if server in subdirectories:
+            repourl = repourl + '/' + subdirectories[server]
         url = repourl + '/.cvmfs_status.json'
         status_json = ""
         try:
