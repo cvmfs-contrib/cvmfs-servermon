@@ -9,6 +9,9 @@
 #  updated - verifies that updates are happening on a stratum 1
 #  gc - verifies that repositories that have done garbage collection
 #       have done it successfully recently
+#  geo - verifies that the geo api on a stratum 1 successfully
+#       responds with a server order for a test case on one repository.
+#       Also, it monitors geodb age.
 # Currently supported parameters are
 #  format - value one of the following (default: list)
 #    status - reports only one line: OK, WARNING, or CRITICAL
@@ -155,7 +158,7 @@ def dispatch(version, montests, parameters, start_response, environ):
 
     allresults = []
     if replicas and montests in ('geo', 'all'):
-        allresults.append(cvmfsmon_geo.runtest(replicas[0], server, headers))
+        allresults.append(cvmfsmon_geo.runtest(replicas[0], server, headers, repos_info.get('last_geodb_update', '')))
 
     replicas_and_repos = []
     if montests != 'geo':

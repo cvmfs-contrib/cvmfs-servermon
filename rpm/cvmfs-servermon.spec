@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.18
+Version: 1.19
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -70,6 +70,9 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 /usr/share/cvmfs-servermon
 
 %changelog
+* Mon Dec 19 2022 Edita Kizinevic <edita.kizinevic@cern.ch> - 1.19-1
+- Add monitor of geodb age.
+
 * Mon Dec 13 2021 Edita Kizinevic <edita.kizinevic@cern.ch> - 1.18-1
 - Add an optional subdirectory to the URL used for reading .cvmfs_status.json.
 
