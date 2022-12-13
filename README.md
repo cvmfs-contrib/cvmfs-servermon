@@ -79,6 +79,8 @@ The web API is very simple. URLs are of the following format:
     repository will be in WARNING condition, and it will be in CRITICAL
     condition if the whitelist file is expired. The limit can be changed in
     `/etc/cvmfsmon/api.conf`.
+7.  \"check\" - verifies that cvmfs_server check does not have failures. If
+    it has a failure, a repository will be in WARNING condition.
 
 The params are all optional. The currently supported params are:
 
