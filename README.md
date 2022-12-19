@@ -74,6 +74,11 @@ The web API is very simple. URLs are of the following format:
     responds with a server order for a test case on one repository. Also,
     it monitors geodb age. It will be in WARNING condition if geodb was
     updated more than 30 days ago.
+6.  \"whitelist\" - verifies that the .cvmfswhitelist file is not expired.
+    If the expiration time is less than 48 hours away (by default), a
+    repository will be in WARNING condition, and it will be in CRITICAL
+    condition if the whitelist file is expired. The limit can be changed in
+    `/etc/cvmfsmon/api.conf`.
 
 The params are all optional. The currently supported params are:
 

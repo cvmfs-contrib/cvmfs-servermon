@@ -12,6 +12,7 @@
 #  geo - verifies that the geo api on a stratum 1 successfully
 #       responds with a server order for a test case on one repository.
 #       Also, it monitors geodb age.
+#  whitelist - verifies that whitelist file is not expired
 # Currently supported parameters are
 #  format - value one of the following (default: list)
 #    status - reports only one line: OK, WARNING, or CRITICAL
@@ -25,7 +26,7 @@ from __future__ import print_function
 
 import os, sys, socket, anyjson, pprint, string
 import time, threading
-import cvmfsmon_updated, cvmfsmon_gc, cvmfsmon_geo
+import cvmfsmon_updated, cvmfsmon_gc, cvmfsmon_geo, cvmfsmon_whitelist
 
 try:
     from urllib import request as urllib_request
@@ -86,7 +87,8 @@ def parse_api_conf():
             'updated-warning': 8,
             'updated-critical': 24,
             'gc-warning': 10,
-            'gc-critical': 20
+            'gc-critical': 20,
+            'whitelist-warning': 48
         }
         subdirectories = {}
 
@@ -228,6 +230,17 @@ def dispatch(version, montests, parameters, start_response, environ):
             results.append(cvmfsmon_updated.runtest(repo, limits, repo_status, errormsg))
         if (montests == "gc") or (montests == "all"):
             results.append(cvmfsmon_gc.runtest(repo, limits, repo_status, errormsg))
+
+        url_whitelist = repourl + '/.cvmfswhitelist'
+        whitelist = ''
+        try:
+            request = urllib_request.Request(url_whitelist, headers=headers)
+            whitelist = urllib_request.urlopen(request).read()
+        except:
+            errormsg =  str(sys.exc_info()[1])
+
+        if (montests == "whitelist") or (montests == "all"):
+            results.append(cvmfsmon_whitelist.runtest(repo, limits, whitelist, errormsg))
         if results == []:
             return bad_request(start_response, 'unrecognized montests ' + montests)
         allresults.extend(results)
