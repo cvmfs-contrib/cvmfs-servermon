@@ -71,7 +71,9 @@ The web API is very simple. URLs are of the following format:
     collection was more than 20 days ago. The limits can be changed in
     `/etc/cvmfsmon/api.conf`.
 5.  \"geo\" - verifies that the geo api on a stratum 1 successfully
-    responds with a server order for a test case on one repository.
+    responds with a server order for a test case on one repository. Also,
+    it monitors geodb age. It will be in WARNING condition if geodb was
+    updated more than 30 days ago.
 
 The params are all optional. The currently supported params are:
 
