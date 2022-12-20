@@ -72,6 +72,7 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 %changelog
 * Mon Dec 19 2022 Edita Kizinevic <edita.kizinevic@cern.ch> - 1.19-1
 - Add monitor of geodb age.
+- Add monitor of whitelist expiration.
 
 * Mon Dec 13 2021 Edita Kizinevic <edita.kizinevic@cern.ch> - 1.18-1
 - Add an optional subdirectory to the URL used for reading .cvmfs_status.json.
