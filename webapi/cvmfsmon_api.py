@@ -13,6 +13,7 @@
 #       responds with a server order for a test case on one repository.
 #       Also, it monitors geodb age.
 #  whitelist - verifies that whitelist file is not expired
+#  check - verifies that cvmfs_server check does not have failures
 # Currently supported parameters are
 #  format - value one of the following (default: list)
 #    status - reports only one line: OK, WARNING, or CRITICAL
@@ -26,7 +27,7 @@ from __future__ import print_function
 
 import os, sys, socket, anyjson, pprint, string
 import time, threading
-import cvmfsmon_updated, cvmfsmon_gc, cvmfsmon_geo, cvmfsmon_whitelist
+import cvmfsmon_updated, cvmfsmon_gc, cvmfsmon_geo, cvmfsmon_whitelist, cvmfsmon_check
 
 try:
     from urllib import request as urllib_request
@@ -210,6 +211,9 @@ def dispatch(version, montests, parameters, start_response, environ):
                 errormsg =  str(sys.exc_info()[1])
         except:
             errormsg =  str(sys.exc_info()[1])
+
+        if (montests == "check") or (montests == "all"):
+            results.append(cvmfsmon_check.runtest(repo, repo_status.get('check_status', ''), errormsg))
 
         if doupdated:
             if 'last_snapshot' not in repo_status:
