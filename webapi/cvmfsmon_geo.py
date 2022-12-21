@@ -18,8 +18,6 @@ def runtest(repo, server, headers, last_geodb_update):
             diff_days = (datetime.now(utc) - datetime.strptime(last_geodb_update, '%a %b %d %H:%M:%S %Z %Y').replace(tzinfo=utc)).days
             if diff_days > 30:
                 msg = 'last geodb update ' + str(diff_days) + ' days ago'
-        else:
-            msg = 'cannot find last_geodb_update'
         request = urllib_request.Request(url, headers=headers)
         response = urllib_request.urlopen(request)
         output = response.read().decode('utf-8').strip()
