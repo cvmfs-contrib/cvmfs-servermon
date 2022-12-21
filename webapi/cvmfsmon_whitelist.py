@@ -7,7 +7,7 @@ def runtest(repo, limits, whitelist, errormsg):
     warning_hours = limits[testname + '-warning']
 
     if errormsg != '':
-        if errormsg.endswith('Not found'):
+        if errormsg.lower().endswith('not found'):
             # ignore repos with a missing whitelist file
             return []
         return [ testname, repo, 'CRITICAL', 'error: ' + errormsg]

@@ -8,7 +8,7 @@ def runtest(repo, limits, repo_status, errormsg):
     critical_days = limits[testname + '-critical']
 
     if errormsg != "":
-        if errormsg.endswith('Not found'):
+        if errormsg.lower().endswith('not found'):
             # ignore repos with a missing status file
             return []
         return [ testname, repo, 'CRITICAL', 'error: ' + errormsg]
