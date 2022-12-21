@@ -71,16 +71,21 @@ The web API is very simple. URLs are of the following format:
     collection was more than 20 days ago. The limits can be changed in
     `/etc/cvmfsmon/api.conf`.
 5.  \"geo\" - verifies that the geo api on a stratum 1 successfully
-    responds with a server order for a test case on one repository. Also,
-    it monitors geodb age. It will be in WARNING condition if geodb was
-    updated more than 30 days ago.
-6.  \"whitelist\" - verifies that the .cvmfswhitelist file is not expired.
+    responds with a server order for a test case on one repository.  If
+    there is no order returned, the test will be in CRITICAL condition,
+    and it will be in WARNING condition if the wrong order is returned.
+    The test also monitors geodb age: it will be in WARNING condition if
+    the geodb was last updated more than 30 days ago.
+6.  \"whitelist\" - verifies that the .cvmfswhitelist file on a stratum 0
+    or stratum 1 is not expired.
     If the expiration time is less than 48 hours away (by default), a
     repository will be in WARNING condition, and it will be in CRITICAL
-    condition if the whitelist file is expired. The limit can be changed in
-    `/etc/cvmfsmon/api.conf`.
-7.  \"check\" - verifies that cvmfs_server check does not have failures. If
-    it has a failure, a repository will be in WARNING condition.
+    condition if the whitelist file is expired. The warning limit can be
+    changed in `/etc/cvmfsmon/api.conf`.
+7.  \"check\" - verifies that `cvmfs_server check` on a stratum 0 or 
+    stratum 1 did not have any failures.  A repository will be in WARNING
+    condition if there was a failure the last time `cvmfs_server check`
+    ran on the repository.
 
 The params are all optional. The currently supported params are:
 
