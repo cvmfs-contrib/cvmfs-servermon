@@ -71,6 +71,7 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 
 %changelog
 * Fri Jan  6 2023 Dave Dykstra <dwd@fnal.gov> - 1.20-1
+- Decode the whitelist file data into a string for python3
 - Add whitelist testname to comment in api.conf
 
 * Wed Dec 21 2022 Edita Kizinevic <edita.kizinevic@cern.ch> - 1.19-1
