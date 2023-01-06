@@ -239,7 +239,15 @@ def dispatch(version, montests, parameters, start_response, environ):
         whitelist = ''
         try:
             request = urllib_request.Request(url_whitelist, headers=headers)
-            whitelist = urllib_request.urlopen(request).read().decode('utf-8')
+            whitelistdata = urllib_request.urlopen(request).read()
+            # whitelistdata needs to be decoded on python3, but the binary
+            # signature data can cause a decode error if the whole thing is
+            # done at once, so decode line by line.
+            for linedata in whitelistdata.splitlines():
+                line = linedata.decode('utf-8')
+                if line == '--':
+                    break
+                whitelist += line + '\n'
         except:
             errormsg =  str(sys.exc_info()[1])
 
