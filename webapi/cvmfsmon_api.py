@@ -239,7 +239,7 @@ def dispatch(version, montests, parameters, start_response, environ):
         whitelist = ''
         try:
             request = urllib_request.Request(url_whitelist, headers=headers)
-            whitelist = urllib_request.urlopen(request).read()
+            whitelist = urllib_request.urlopen(request).read().decode('utf-8')
         except:
             errormsg =  str(sys.exc_info()[1])
 
