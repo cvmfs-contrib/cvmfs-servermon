@@ -213,7 +213,7 @@ def dispatch(version, montests, parameters, start_response, environ):
             errormsg =  str(sys.exc_info()[1])
 
         if (montests == "check") or (montests == "all"):
-            results.append(cvmfsmon_check.runtest(repo, repo_status.get('check_status', ''), errormsg))
+            results.append(cvmfsmon_check.runtest(repo, repo_status, errormsg))
 
         if doupdated:
             if 'last_snapshot' not in repo_status:
