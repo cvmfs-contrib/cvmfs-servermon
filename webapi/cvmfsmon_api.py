@@ -46,6 +46,7 @@ conf_mod_time = 0
 last_config_time = 0
 aliases = {}
 excludes = []
+disables = []
 limits = {}
 lock = threading.Lock()
 
@@ -71,7 +72,7 @@ def good_request(start_response, response_body):
     return [response_body]
 
 def parse_api_conf():
-    global aliases, excludes, limits
+    global aliases, excludes, disables, limits
     global conf_mod_time
     global subdirectories
     conffile = '/etc/cvmfsmon/api.conf'
@@ -84,6 +85,7 @@ def parse_api_conf():
 
         aliases = { 'local' : '127.0.0.1' }
         excludes = []
+        disables = []
         limits = {
             'updated-warning': 8,
             'updated-critical': 24,
@@ -105,6 +107,8 @@ def parse_api_conf():
                         subdirectories[server] = subparts[1]
                 elif words[0] == 'excluderepo':
                     excludes.append(words[1])
+                elif words[0] == 'disabletest':
+                    disables.append(words[1])
                 elif words[0] == 'limit' and len(words) > 1:
                     parts = words[1].split('=')
                     limits[parts[0]] = int(parts[1])
@@ -117,6 +121,13 @@ def parse_api_conf():
     except Exception as e:
         print('error reading ' + conffile + ', continuing: ' + str(e))
         conf_mod_time = 0
+
+def domontest(testname, montests):
+    if testname == montests:
+        return True
+    if montests == "all" and testname not in disables:
+        return True
+    return False
 
 def dispatch(version, montests, parameters, start_response, environ):
     global last_config_time
@@ -160,7 +171,7 @@ def dispatch(version, montests, parameters, start_response, environ):
         return error_request(start_response, '502 Bad Gateway', url + ' error: ' + str(sys.exc_info()[1]))
 
     allresults = []
-    if replicas and montests in ('geo', 'all'):
+    if replicas and domontest('geo', montests):
         allresults.append(cvmfsmon_geo.runtest(replicas[0], server, headers, repos_info.get('last_geodb_update', '')))
 
     replicas_and_repos = []
@@ -176,7 +187,7 @@ def dispatch(version, montests, parameters, start_response, environ):
             continue
         errormsg = ""
         doupdated = False
-        if (repo in replicas) and ((montests == "updated") or (montests == "all")):
+        if (repo in replicas) and domontest('updated', montests):
             doupdated = True
         repo_status = {}
         repourl = 'http://' + server + '/cvmfs/' + repo
@@ -212,7 +223,7 @@ def dispatch(version, montests, parameters, start_response, environ):
         except:
             errormsg =  str(sys.exc_info()[1])
 
-        if (montests == "check") or (montests == "all"):
+        if domontest('check', montests):
             results.append(cvmfsmon_check.runtest(repo, repo_status, errormsg))
 
         if doupdated:
@@ -232,7 +243,7 @@ def dispatch(version, montests, parameters, start_response, environ):
                     except:
                         pass
             results.append(cvmfsmon_updated.runtest(repo, limits, repo_status, errormsg))
-        if (montests == "gc") or (montests == "all"):
+        if domontest('gc', montests):
             results.append(cvmfsmon_gc.runtest(repo, limits, repo_status, errormsg))
 
         url_whitelist = repourl + '/.cvmfswhitelist'
@@ -251,7 +262,7 @@ def dispatch(version, montests, parameters, start_response, environ):
         except:
             errormsg =  str(sys.exc_info()[1])
 
-        if (montests == "whitelist") or (montests == "all"):
+        if domontest('whitelist', montests):
             results.append(cvmfsmon_whitelist.runtest(repo, limits, whitelist, errormsg))
         if results == []:
             return bad_request(start_response, 'unrecognized montests ' + montests)
