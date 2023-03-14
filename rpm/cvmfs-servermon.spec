@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.22
+Version: 1.23
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -70,6 +70,11 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 /usr/share/cvmfs-servermon
 
 %changelog
+* Tue Mar 14 2023 Dave Dykstra <dwd@fnal.gov> - 1.23-1
+- Clear errors from reading .cvmfs_status.json before reading whitelist.
+  That was causing stratum 0 repositories that had no status file to skip
+  doing the whitelist check.
+
 * Mon Jan  9 2023 Dave Dykstra <dwd@fnal.gov> - 1.22-1
 - Add disabletest configuration option
 
