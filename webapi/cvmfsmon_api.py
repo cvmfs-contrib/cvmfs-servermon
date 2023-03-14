@@ -246,8 +246,11 @@ def dispatch(version, montests, parameters, start_response, environ):
         if domontest('gc', montests):
             results.append(cvmfsmon_gc.runtest(repo, limits, repo_status, errormsg))
 
+        # clear any error message from above since it's no longer relevant
+        errormsg = ""
+
         url_whitelist = repourl + '/.cvmfswhitelist'
-        whitelist = ''
+        whitelist = ""
         try:
             request = urllib_request.Request(url_whitelist, headers=headers)
             whitelistdata = urllib_request.urlopen(request).read()
