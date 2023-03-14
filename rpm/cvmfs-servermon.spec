@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.21
+Version: 1.22
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -70,6 +70,9 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 /usr/share/cvmfs-servermon
 
 %changelog
+* Mon Jan  9 2023 Dave Dykstra <dwd@fnal.gov> - 1.22-1
+- Add disabletest configuration option
+
 * Fri Jan  6 2023 Dave Dykstra <dwd@fnal.gov> - 1.21-1
 - Only show check status on repositories that have it, similar to the
   gc test

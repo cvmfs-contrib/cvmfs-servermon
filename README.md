@@ -32,8 +32,8 @@ Then install cvmfs-servermon:
 
 Configuration is optional in a simple file `/etc/cvmfsmon/api.conf`. In
 there you can define aliases for remote machines, list repositories you
-want to exclude from monitoring, and change the default test limits. See
-the comments in the file.
+want to exclude from monitoring, list tests you want to disable from
+running, and change the default test limits. See the comments in the file.
 
 If you are using a shared cvmfs httpd configuration file and not letting
 the cvmfs\_server command manage the httpd configuration itself, then it
