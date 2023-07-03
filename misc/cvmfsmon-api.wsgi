@@ -1,6 +1,9 @@
 import os, sys, re
 import cvmfsmon_api
-import cgi
+try:
+    import urllib.parse as urllib_parse
+except ImportError: # python < 3
+    import urlparse as urllib_parse
 
 # A URL is of the form:
 # /cvmfsmon/api/v1.0/montests&param1=value1&param2=value2
@@ -20,8 +23,7 @@ def application(environ, start_response):
     version, montests, separator, paramstring = match_result.groups()
 
     try:
-        # python 2.6 and later is suppsed to use urlparse instead of cgi
-        parameters = cgi.parse_qs(paramstring)
+        parameters = urllib_parse.parse_qs(paramstring)
     except:
         return cvmfsmon_api.bad_request(start_response, 'failure parsing parameters: ' + paramstring)
 
