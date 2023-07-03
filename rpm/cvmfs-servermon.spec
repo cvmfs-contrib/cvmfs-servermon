@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.24
+Version: 1.25
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -68,6 +68,10 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 /usr/share/cvmfs-servermon
 
 %changelog
+* Mon Jul  3 2023 Dave Dykstra <dwd@fnal.gov> - 1.25-1
+- Convert from using cgi.parse_qs to either urlparse.parse_qs (python 2)
+  or urllib.parse (python 3).  The cgi module does not exist on el9.
+
 * Mon Jul  3 2023 Dave Dykstra <dwd@fnal.gov> - 1.24-1
 - Convert from anyjson to the standard python json library because anyjson
   isn't available on el9 and because json is now part of the standard library
