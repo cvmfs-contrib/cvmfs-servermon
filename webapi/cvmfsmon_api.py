@@ -25,7 +25,7 @@
 
 from __future__ import print_function
 
-import os, sys, socket, anyjson, pprint, string
+import os, sys, socket, json, pprint, string
 import time, threading
 import cvmfsmon_updated, cvmfsmon_gc, cvmfsmon_geo, cvmfsmon_whitelist, cvmfsmon_check
 
@@ -156,7 +156,7 @@ def dispatch(version, montests, parameters, start_response, environ):
     try:
         request = urllib_request.Request(url, headers=headers)
         json_data = urllib_request.urlopen(request).read().decode('utf-8')
-        repos_info = anyjson.deserialize(json_data)
+        repos_info = json.loads(json_data)
         if 'replicas' in repos_info:
             for repo_info in repos_info['replicas']:
                 if 'pass-through' not in repo_info or not repo_info['pass-through']:
@@ -198,7 +198,7 @@ def dispatch(version, montests, parameters, start_response, environ):
         try:
             request = urllib_request.Request(url, headers=headers)
             status_json = urllib_request.urlopen(request).read().decode('utf-8')
-            repo_status = anyjson.deserialize(status_json)
+            repo_status = json.loads(status_json)
         except urllib_request.HTTPError as e:
             if e.code == 404:
                 if doupdated:

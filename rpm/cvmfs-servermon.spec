@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.23
+Version: 1.24
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -14,11 +14,9 @@ Requires: httpd
 %if %{rhel} > 7
 Requires: python3
 Requires: python3-mod_wsgi
-Requires: python3-anyjson
 Requires: python3-dateutil
 %else
 Requires: mod_wsgi
-Requires: python-anyjson
 Requires: python-dateutil
 %endif
 
@@ -70,6 +68,11 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 /usr/share/cvmfs-servermon
 
 %changelog
+* Mon Jul  3 2023 Dave Dykstra <dwd@fnal.gov> - 1.24-1
+- Convert from anyjson to the standard python json library because anyjson
+  isn't available on el9 and because json is now part of the standard library
+  even on el7 python2.
+
 * Tue Mar 14 2023 Dave Dykstra <dwd@fnal.gov> - 1.23-1
 - Clear errors from reading .cvmfs_status.json before reading whitelist.
   That was causing stratum 0 repositories that had no status file to skip
