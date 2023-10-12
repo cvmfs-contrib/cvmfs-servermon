@@ -47,6 +47,7 @@ last_config_time = 0
 aliases = {}
 excludes = []
 disables = []
+updated_slowrepos = []
 limits = {}
 lock = threading.Lock()
 
@@ -72,7 +73,7 @@ def good_request(start_response, response_body):
     return [response_body]
 
 def parse_api_conf():
-    global aliases, excludes, disables, limits
+    global aliases, excludes, disables, limits, updated_slowrepos
     global conf_mod_time
     global subdirectories
     conffile = '/etc/cvmfsmon/api.conf'
@@ -86,7 +87,9 @@ def parse_api_conf():
         aliases = { 'local' : '127.0.0.1' }
         excludes = []
         disables = []
+        updated_slowrepos = []
         limits = {
+            'updated-multiplier': 1.1,
             'updated-warning': 8,
             'updated-critical': 24,
             'gc-warning': 10,
@@ -109,15 +112,21 @@ def parse_api_conf():
                     excludes.append(words[1])
                 elif words[0] == 'disabletest':
                     disables.append(words[1])
+		elif words[0] == 'updated-slowrepo':
+		    updated_slowrepos.append(words[1])
                 elif words[0] == 'limit' and len(words) > 1:
                     parts = words[1].split('=')
-                    limits[parts[0]] = int(parts[1])
+                    if parts[0] == 'updated-multiplier':
+                        limits[parts[0]] = float(parts[1])
+                    else:
+                        limits[parts[0]] = int(parts[1])
 
         print('processed ' + conffile)
         print('aliases: ' + str(aliases))
         print('excludes: ' + str(excludes))
         print('limits: ' + str(limits))
         print('subdirectories: ' + str(subdirectories))
+        print('updated-slowrepo: ' + str(updated_slowrepos))
     except Exception as e:
         print('error reading ' + conffile + ', continuing: ' + str(e))
         conf_mod_time = 0
@@ -242,7 +251,7 @@ def dispatch(version, montests, parameters, start_response, environ):
                         repo_status['snapshotting_since'] = snapshotting_string
                     except:
                         pass
-            results.append(cvmfsmon_updated.runtest(repo, limits, repo_status, errormsg))
+            results.append(cvmfsmon_updated.runtest(repo, limits, repo_status, updated_slowrepos, errormsg))
         if domontest('gc', montests):
             results.append(cvmfsmon_gc.runtest(repo, limits, repo_status, errormsg))
 

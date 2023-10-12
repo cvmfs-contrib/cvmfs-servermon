@@ -47,11 +47,15 @@ for tz_descr in map(str.split, tz_str.split('\n')):
     for tz_code in tz_descr[1:]:
         tzd[tz_code] = tz_offset
 
-def runtest(repo, limits, repo_status, errormsg):
+def runtest(repo, limits, repo_status, updated_slowrepos, errormsg):
     testname = 'updated'
 
     warning_hours = limits[testname + '-warning']
     critical_hours = limits[testname + '-critical']
+
+    if repo in updated_slowrepos:
+        warning_hours = warning_hours * limits["updated-multiplier"]
+        critical_hours = critical_hours * limits["updated-multiplier"]
 
     msg = ''
     multiplier = 1
