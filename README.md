@@ -62,6 +62,10 @@ The web API is very simple. URLs are of the following format:
     WARNING condition. If the last update happened more than 24 hours
     ago, a repository will be in CRITICAL condition. The limits of 8 and
     24 can be changed in `/etc/cvmfsmon/api.conf`.
+    Individual repositories that are slower to update than others can be
+    listed in `updated-slowrepo` keywords in `/etc/cvmfsmon/api.conf`
+    and their limits for WARNING and CRITICAL multiplied by the number
+    specified in `limit updated-multiplier`.
 4.  \"gc\" - verifies that repositories that have ever had garbage
     collection run on them, on a stratum 0 or a stratum 1, have
     successfully completed garbage collection recently. If no successful
