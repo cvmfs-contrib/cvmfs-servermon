@@ -112,8 +112,8 @@ def parse_api_conf():
                     excludes.append(words[1])
                 elif words[0] == 'disabletest':
                     disables.append(words[1])
-		elif words[0] == 'updated-slowrepo':
-		    updated_slowrepos.append(words[1])
+                elif words[0] == 'updated-slowrepo':
+                    updated_slowrepos.append(words[1])
                 elif words[0] == 'limit' and len(words) > 1:
                     parts = words[1].split('=')
                     if parts[0] == 'updated-multiplier':
