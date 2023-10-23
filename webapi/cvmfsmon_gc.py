@@ -15,7 +15,7 @@ def runtest(repo, limits, repo_status, errormsg):
     if 'last_gc' in repo_status:
         lastdate_string = repo_status['last_gc']
         if lastdate_string == '':
-          return [ testname, repo, 'CRITICAL', url + ' error: empty gc date' ]
+          return [ testname, repo, 'CRITICAL', ' error: empty gc date' ]
         try:
             lastdate = dateutil.parser.parse(lastdate_string)
         except:

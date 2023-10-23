@@ -126,7 +126,7 @@ def parse_api_conf():
         print('excludes: ' + str(excludes))
         print('limits: ' + str(limits))
         print('subdirectories: ' + str(subdirectories))
-        print('updated-slowrepo: ' + str(updated_slowrepos))
+        print('updated-slowrepos: ' + str(updated_slowrepos))
     except Exception as e:
         print('error reading ' + conffile + ', continuing: ' + str(e))
         conf_mod_time = 0
