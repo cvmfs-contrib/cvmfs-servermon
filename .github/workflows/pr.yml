@@ -1,0 +1,14 @@
+name: pr
+on:
+  pull_request:
+
+jobs:
+  pylint: 
+    name: pylint
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run pylint
+        uses: cclauss/GitHub-Action-for-pylint@0.7.0
+        with:
+          args: "pip install -r requirements.txt; pylint -E webapi/*.py"
