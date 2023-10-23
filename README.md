@@ -147,4 +147,3 @@ administrator to choose when to exclude a repository from monitoring
 (by configuring it in `/etc/cvmfsmon/api.conf`). Also, that reduces
 the number of remote TCP connections needed; a remote cvmfs-servermon
 has to read the status of each repository separately.
-
