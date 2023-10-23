@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.26
+Version: 1.27
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -68,6 +68,12 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 /usr/share/cvmfs-servermon
 
 %changelog
+* Mon Oct 23 2023 Dave Dykstra <dwd@fnal.gov> - 1.27-1
+- Correct inconsistent tab/space which python3 rejected.
+- Fix rare error message regarding an empty last_gc status that pylint
+  found was referencing an undefined variable.
+- Minor fix in log output for updated-slowrepo.
+
 * Thu Oct 12 2023 Dave Dykstra <dwd@fnal.gov> - 1.26-1
 - Add update-slowrepo and limit updated-multiplier configuration options.
 
