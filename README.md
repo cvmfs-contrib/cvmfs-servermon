@@ -129,10 +129,9 @@ whenever the status has changed for two probes in a row it sends an
 email to the
 [cvmfs-stratum-alarm@cern.ch](mailto:cvmfs-stratum-alarm@cern.ch)
 mailing list. For a graphical history it also uploads the status to
-[CERN\'s grafana-based Service Availability website](https://monit-grafana.cern.ch/d/000000855/overview-service-availability?orgId=1&var-isfe=All&var-regexp=cvmfs_stratum1mon)
+[CERN\'s grafana-based Service Availability website](https://monit-grafana.cern.ch/d/plTtqczZz/sls-details?orgId=17&var-services=cvmfs_stratum1mon)
 (via the mechanism documented
-[here](https://itmon.web.cern.ch/itmon/recipes/how_to_publish_service_metrics.html) and
-[here](https://itmon.web.cern.ch/itmon/recipes/how_to_create_a_service_xml.html).
+[here](https://monit-docs.web.cern.ch/metrics/http/)).
 If you'd like a change to the stratum 1s that are monitored, contact
 [cvmfs-servermon-support@cern.ch](mailto:cvmfs-servermon-support@cern.ch).
 In order to be monitored, a stratum 1 needs to either be running
