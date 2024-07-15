@@ -68,6 +68,10 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 /usr/share/cvmfs-servermon
 
 %changelog
+# - Remove old workaround added in version 1.12 because it incorrectly
+#   reported the status of a repo without an initial snapshot but with 
+#   a completed gc.
+
 * Mon Oct 23 2023 Dave Dykstra <dwd@fnal.gov> - 1.27-1
 - Correct inconsistent tab/space which python3 rejected.
 - Fix rare error message regarding an empty last_gc status that pylint
