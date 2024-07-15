@@ -237,20 +237,14 @@ def dispatch(version, montests, parameters, start_response, environ):
 
         if doupdated:
             if 'last_snapshot' not in repo_status:
-                # there was a bug prior to cvmfs_server 2.7.3 that
-                #  caused garbage collection to remove the last_snapshot
-                #  entry, so use last_gc instead if it exists
-                if 'last_gc' in repo_status:
-                    repo_status['last_snapshot'] = repo_status['last_gc']
-                else:
-                    # no complete snapshot, look up snapshotting status
-                    try:
-                        url2 = repourl + '/.cvmfs_is_snapshotting'
-                        request = urllib_request.Request(url2, headers=headers)
-                        snapshotting_string = urllib_request.urlopen(request).read().decode('utf-8')
-                        repo_status['snapshotting_since'] = snapshotting_string
-                    except:
-                        pass
+                # no complete snapshot, look up snapshotting status
+                try:
+                    url2 = repourl + '/.cvmfs_is_snapshotting'
+                    request = urllib_request.Request(url2, headers=headers)
+                    snapshotting_string = urllib_request.urlopen(request).read().decode('utf-8')
+                    repo_status['snapshotting_since'] = snapshotting_string
+                except:
+                    pass
             results.append(cvmfsmon_updated.runtest(repo, limits, repo_status, updated_slowrepos, errormsg))
         if domontest('gc', montests):
             results.append(cvmfsmon_gc.runtest(repo, limits, repo_status, errormsg))
