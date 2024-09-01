@@ -68,7 +68,7 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 /usr/share/cvmfs-servermon
 
 %changelog
-Mon Sep  2 2024 Dave Dykstra <dwd@fnal.gov> - 1.28-1
+* Mon Sep  2 2024 Dave Dykstra <dwd@fnal.gov> - 1.28-1
 - Prevent json pretty printer from breaking up long strings, the way
   pyhon2 did it.
 - Remove old workaround added in version 1.12 because it incorrectly
