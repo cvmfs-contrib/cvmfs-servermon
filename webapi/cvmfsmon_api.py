@@ -138,6 +138,19 @@ def domontest(testname, montests):
         return True
     return False
 
+# from https://stackoverflow.com/a/55619288
+# simulate python2 pretty printer by not breaking up strings
+class Python2PrettyPrinter(pprint.PrettyPrinter):
+    class _fake_short_str(str):
+        def __len__(self):
+            return 1 if super().__len__() else 0
+
+    def format(self, object, context, maxlevels, level):
+        res = super().format(object, context, maxlevels, level)
+        if isinstance(object, str):
+            return (self._fake_short_str(res[0]), ) + res[1:]
+        return res
+
 def dispatch(version, montests, parameters, start_response, environ):
     global last_config_time
     now = time.time()
@@ -311,7 +324,7 @@ def dispatch(version, montests, parameters, start_response, environ):
                 details[status][test] = [repomsg]
 
         output = StringIO()
-        pprint.pprint(details, output)
+        Python2PrettyPrinter(stream=output).pprint(details)
         body = output.getvalue()
         output.close()
         body = body.replace("'", '"')
