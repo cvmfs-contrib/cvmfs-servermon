@@ -203,9 +203,8 @@ def dispatch(version, montests, parameters, start_response, environ):
     for repo in replicas_and_repos:
         if repo in excludes:
             continue
-        results = []
         if montests == 'ok':
-            results.append([ 'ok', repo, 'OK', '' ])
+            allresults.append([ 'ok', repo, 'OK', '' ])
             continue
         errormsg = ""
         doupdated = False
@@ -245,6 +244,7 @@ def dispatch(version, montests, parameters, start_response, environ):
         except:
             errormsg =  str(sys.exc_info()[1])
 
+        results = []
         if domontest('check', montests):
             results.append(cvmfsmon_check.runtest(repo, repo_status, errormsg))
 

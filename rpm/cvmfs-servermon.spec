@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.28
+Version: 1.29
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -68,6 +68,9 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 /usr/share/cvmfs-servermon
 
 %changelog
+* Mon Feb 10 2025 Dave Dykstra <dwd@fnal.gov> - 1.29-1
+- Fix the /ok api, which was showing nothing.
+
 * Mon Sep  2 2024 Dave Dykstra <dwd@fnal.gov> - 1.28-1
 - Prevent json pretty printer from breaking up long strings, the way
   pyhon2 did it.
