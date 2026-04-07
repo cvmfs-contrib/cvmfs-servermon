@@ -1,6 +1,6 @@
 Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
-Version: 1.29
+Version: 1.30
 # The release_prefix macro is used in the OBS prjconf, don't change its name
 %define release_prefix 1
 Release: %{release_prefix}%{?dist}
@@ -68,6 +68,9 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 /usr/share/cvmfs-servermon
 
 %changelog
+* Tue Apr  7 2026 Dave Dykstra <dwd@fnal.gov> - 1.30-1
+- Add support for optional specific repositories on "disabletest" config.
+
 * Mon Feb 10 2025 Dave Dykstra <dwd@fnal.gov> - 1.29-1
 - Fix the /ok api, which was showing nothing.
 
