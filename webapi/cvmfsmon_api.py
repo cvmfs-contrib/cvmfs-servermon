@@ -46,7 +46,7 @@ conf_mod_time = 0
 last_config_time = 0
 aliases = {}
 excludes = []
-disables = []
+disables = {}
 updated_slowrepos = []
 limits = {}
 lock = threading.Lock()
@@ -86,7 +86,7 @@ def parse_api_conf():
 
         aliases = { 'local' : '127.0.0.1' }
         excludes = []
-        disables = []
+        disables = {}
         updated_slowrepos = []
         limits = {
             'updated-multiplier': 1.1,
@@ -110,8 +110,16 @@ def parse_api_conf():
                         subdirectories[server] = subparts[1]
                 elif words[0] == 'excluderepo':
                     excludes.append(words[1])
-                elif words[0] == 'disabletest':
-                    disables.append(words[1])
+                elif words[0] == 'disabletest' and len(words) >= 2:
+                    testname = words[1]
+                    repos = words[2:]
+                    existing = disables.get(testname)
+                    if not repos:
+                        # no repos listed: disable for all repos
+                        disables[testname] = []
+                    elif existing != []:
+                        # extend repo list; skip if already disabled for all repos
+                        disables[testname] = (existing or []) + list(repos)
                 elif words[0] == 'updated-slowrepo':
                     updated_slowrepos.append(words[1])
                 elif words[0] == 'limit' and len(words) > 1:
@@ -131,10 +139,20 @@ def parse_api_conf():
         print('error reading ' + conffile + ', continuing: ' + str(e))
         conf_mod_time = 0
 
-def domontest(testname, montests):
+def domontest(testname, montests, repo=None):
     if testname == montests:
         return True
-    if montests == "all" and testname not in disables:
+    if montests == "all":
+        if testname not in disables:
+            return True
+        # testname is in disables; check if it applies to this repo
+        disabled_repos = disables[testname]
+        if not disabled_repos:
+            # disabled for all repos
+            return False
+        if repo is not None and repo in disabled_repos:
+            # disabled for this specific repo
+            return False
         return True
     return False
 
@@ -208,7 +226,7 @@ def dispatch(version, montests, parameters, start_response, environ):
             continue
         errormsg = ""
         doupdated = False
-        if (repo in replicas) and domontest('updated', montests):
+        if (repo in replicas) and domontest('updated', montests, repo):
             doupdated = True
         repo_status = {}
         repourl = 'http://' + server + '/cvmfs/' + repo
@@ -245,7 +263,7 @@ def dispatch(version, montests, parameters, start_response, environ):
             errormsg =  str(sys.exc_info()[1])
 
         results = []
-        if domontest('check', montests):
+        if domontest('check', montests, repo):
             results.append(cvmfsmon_check.runtest(repo, repo_status, errormsg))
 
         if doupdated:
@@ -259,7 +277,7 @@ def dispatch(version, montests, parameters, start_response, environ):
                 except:
                     pass
             results.append(cvmfsmon_updated.runtest(repo, limits, repo_status, updated_slowrepos, errormsg))
-        if domontest('gc', montests):
+        if domontest('gc', montests, repo):
             results.append(cvmfsmon_gc.runtest(repo, limits, repo_status, errormsg))
 
         # clear any error message from above since it's no longer relevant
@@ -281,7 +299,7 @@ def dispatch(version, montests, parameters, start_response, environ):
         except:
             errormsg =  str(sys.exc_info()[1])
 
-        if domontest('whitelist', montests):
+        if domontest('whitelist', montests, repo):
             results.append(cvmfsmon_whitelist.runtest(repo, limits, whitelist, errormsg))
         if results == []:
             return bad_request(start_response, 'unrecognized montests ' + montests)
