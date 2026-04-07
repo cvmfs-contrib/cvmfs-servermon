@@ -2,7 +2,7 @@ Summary: CernVM File System Server Monitoring
 Name: cvmfs-servermon
 Version: 1.30
 # The release_prefix macro is used in the OBS prjconf, don't change its name
-%define release_prefix 1
+%define release_prefix 2
 Release: %{release_prefix}%{?dist}
 BuildArch: noarch
 Group: Applications/System
@@ -11,14 +11,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Source0: https://github.com/cvmfs/%{name}/archive/%{name}-%{version}.tar.gz
 
 Requires: httpd
-%if %{rhel} > 7
 Requires: python3
 Requires: python3-mod_wsgi
 Requires: python3-dateutil
-%else
-Requires: mod_wsgi
-Requires: python-dateutil
-%endif
 
 %description
 Provides an api for monitoring a cvmfs-server installation or multiple
@@ -28,11 +23,7 @@ cvmfs-server installations.
 %setup -q
 
 %build
-%if %{rhel} < 7
-sed 's/{ACCESS_CONTROL}/Order allow,deny\n  Allow from all/' misc/cvmfsmon.conf.in >misc/cvmfsmon.conf
-%else
 sed 's/{ACCESS_CONTROL}/Require all granted/' misc/cvmfsmon.conf.in >misc/cvmfsmon.conf
-%endif
 
 %install
 mkdir -p $RPM_BUILD_ROOT/etc/cvmfsmon
@@ -47,15 +38,9 @@ mkdir -p $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 install -p -m 444 webapi/* $RPM_BUILD_ROOT/usr/share/cvmfs-servermon/webapi
 
 %post
-%if %{rhel} < 7
-if /sbin/service httpd status >/dev/null; then
-    /sbin/service httpd reload
-fi
-%else
 if systemctl --quiet is-active httpd; then
     systemctl reload httpd
 fi
-%endif
 # Allow our httpd module to read from the network when SELinux is enabled
 setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 
@@ -68,6 +53,10 @@ setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 /usr/share/cvmfs-servermon
 
 %changelog
+* Tue Apr  7 2026 Dave Dykstra <dwd@fnal.gov> - 1.30-2
+- Remove support for rhel versions less than 7 because they intefered with
+  Fedora.
+
 * Tue Apr  7 2026 Dave Dykstra <dwd@fnal.gov> - 1.30-1
 - Add support for optional specific repositories on "disabletest" config.
 
